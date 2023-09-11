@@ -1,5 +1,14 @@
 {
-    "rewrites": [
-      { "source": "/(.*)", "destination": "/app.py" }
+    "builds": [
+        {
+            "src": "api/pdf.py",
+            "use": "@vercel/python"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "api/pdf.py"
+        }
     ]
-  }
+}
