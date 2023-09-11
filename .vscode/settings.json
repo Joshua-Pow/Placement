@@ -1,0 +1,16 @@
+{
+  "editor.formatOnSave": true,
+  "[typescript]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+    },
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "[css]": {
+    "css.lint.unknownAtRules": "ignore"
+  },
+  "python.analysis.typeCheckingMode": "basic"
+}
