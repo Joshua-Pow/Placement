@@ -6,18 +6,14 @@ import { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-type BackendRequest = {
-  message: string;
-};
-
 export default function Home() {
-  const [backendRequest, setBackendRequest] = useState<BackendRequest>(null);
+  const [backendRequest, setBackendRequest] = useState('');
 
   //Make a request to the api at the /pdf endpoint
   useEffect(() => {
     fetch('/api/pdf/')
       .then((res) => res.json())
-      .then((data) => setBackendRequest(data));
+      .then((data) => setBackendRequest(data.message));
   }, []);
 
   return (
@@ -26,9 +22,7 @@ export default function Home() {
         <Flex direction={'column'} pb={'4'}>
           <Heading>Placement</Heading>
           <Text color="gray">You can upload your PDF here.</Text>
-          <Text color="gray">
-            PDF: {backendRequest?.message ?? '...loading'}
-          </Text>
+          <Text color="gray">PDF: {backendRequest ?? '...loading'}</Text>
           <Link href="/api/pdf">
             <code className="font-mono font-bold">api/pdf.py</code>
           </Link>
