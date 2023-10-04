@@ -3,6 +3,8 @@
 import { Container, Flex, Heading, Text } from '@radix-ui/themes';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function Home() {
   const [backendRequest, setBackendRequest] = useState(null);
@@ -26,6 +28,10 @@ export default function Home() {
           <Link href="/api/pdf">
             <code className="font-mono font-bold">api/pdf.py</code>
           </Link>
+          <div className="grid w-full max-w-sm items-center gap-1.5">
+            <Label htmlFor="picture">Picture</Label>
+            <Input id="picture" type="file" />
+          </div>
         </Flex>
       </Container>
     </main>
