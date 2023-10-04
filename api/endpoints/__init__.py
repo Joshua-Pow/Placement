@@ -6,6 +6,7 @@ api = Api(
     title="Placement API",
     version="1.0",
     description="A simple API to upload PDFs and get their shapes",
+    prefix="/api",
 )
 
 api.add_namespace(pdf_api)
