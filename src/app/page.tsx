@@ -6,8 +6,12 @@ import { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+type BackendRequest = {
+  message: string;
+};
+
 export default function Home() {
-  const [backendRequest, setBackendRequest] = useState(null);
+  const [backendRequest, setBackendRequest] = useState<BackendRequest>(null);
 
   //Make a request to the api at the /pdf endpoint
   useEffect(() => {
