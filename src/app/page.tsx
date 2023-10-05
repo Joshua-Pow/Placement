@@ -7,16 +7,19 @@ import { Input } from '@/components/ui/input';
 
 export default function Home() {
   const [backendRequest, setBackendRequest] = useState('');
-  const [PDF, setPDF] = useState(null);
+  const [PDF, setPDF] = useState<File | null>(null);
 
   const onPDFChange = useCallback(
     (e: ChangeEvent) => {
-      const file = e?.target?.files[0];
+      const target = e.target as HTMLInputElement;
+      if (target.files) {
+        const file = target.files[0];
 
-      if (file) {
-        setPDF(file);
-      } else {
-        setPDF(null);
+        if (file) {
+          setPDF(file);
+        } else {
+          setPDF(null);
+        }
       }
     },
     [setPDF],
