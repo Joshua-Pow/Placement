@@ -2,16 +2,32 @@
 
 import { Container, Flex, Heading, Text } from '@radix-ui/themes';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 export default function Home() {
   const [backendRequest, setBackendRequest] = useState('');
+  const [PDF, setPDF] = useState<File | null>(null);
+
+  const onPDFChange = useCallback(
+    (e: ChangeEvent) => {
+      const target = e.target as HTMLInputElement;
+      if (target.files) {
+        const file = target.files[0];
+
+        if (file) {
+          setPDF(file);
+        } else {
+          setPDF(null);
+        }
+      }
+    },
+    [setPDF],
+  );
 
   //Make a request to the api at the /pdf endpoint
   useEffect(() => {
-    fetch('/api/pdf/')
+    fetch('/api/pdf')
       .then((res) => res.json())
       .then((data) => setBackendRequest(data.message));
   }, []);
@@ -22,13 +38,18 @@ export default function Home() {
         <Flex direction={'column'} pb={'4'}>
           <Heading>Placement</Heading>
           <Text color="gray">You can upload your PDF here.</Text>
-          <Text color="gray">PDF: {backendRequest ?? '...loading'}</Text>
+          <Text color="gray">
+            <b>PDF:</b> {PDF ? PDF.name : 'Select a PDF from your computer'}
+          </Text>
+          <Text color="gray">
+            <b>Backend Request: </b>
+            {backendRequest ?? '...loading'}
+          </Text>
           <Link href="/api/pdf">
             <code className="font-mono font-bold">api/pdf.py</code>
           </Link>
           <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="picture">Picture</Label>
-            <Input id="picture" type="file" />
+            <Input id="picture" type="file" onChange={onPDFChange} />
           </div>
         </Flex>
       </Container>
