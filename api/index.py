@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
-from flask_restx import Api, Namespace, Resource
+from flask_restx import Api, Resource
+from api.util import calculate
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -10,18 +11,18 @@ api = Api(
     version="1.0",
     description="A simple API to upload PDFs and get their shapes",
     prefix="/api",
+    default="PDF",
+    default_label="PDF related operations",
+    app=app,
 )
 
-api.init_app(app)
 
-pdf_namespace = Namespace("pdf", description="PDF related operations")
-api.add_namespace(pdf_namespace)
-
-
-@api.route("/")
+@api.route("/pdf")
 class Pdf(Resource):
     def get(self):
-        return {"message": "Hello, World!"}
+        string = f"Hello, World! {calculate(1, 2)}"
+        print(string)
+        return {"message": string}
 
     def post(self):
         return {"message": "Hello, World!"}

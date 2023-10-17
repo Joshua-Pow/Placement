@@ -27,7 +27,7 @@ export default function Home() {
 
   //Make a request to the api at the /pdf endpoint
   useEffect(() => {
-    fetch('/api/pdf/')
+    fetch('/api/pdf')
       .then((res) => res.json())
       .then((data) => setBackendRequest(data.message));
   }, []);
@@ -39,9 +39,12 @@ export default function Home() {
           <Heading>Placement</Heading>
           <Text color="gray">You can upload your PDF here.</Text>
           <Text color="gray">
-            PDF: {PDF ? PDF.name : 'Select a PDF from your computer'}
+            <b>PDF:</b> {PDF ? PDF.name : 'Select a PDF from your computer'}
           </Text>
-          <Text color="gray">{backendRequest ?? '...loading'}</Text>
+          <Text color="gray">
+            <b>Backend Request: </b>
+            {backendRequest ?? '...loading'}
+          </Text>
           <Link href="/api/pdf">
             <code className="font-mono font-bold">api/pdf.py</code>
           </Link>
