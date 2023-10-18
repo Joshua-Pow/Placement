@@ -1,29 +1,11 @@
 'use client';
 
-import { Container, Flex, Heading, Text } from '@radix-ui/themes';
-import Link from 'next/link';
-import { ChangeEvent, useCallback, useEffect, useState } from 'react';
-import { Input } from '@/components/ui/input';
+import FileUpload from '@/components/FileUpload';
+import { Container, Flex, Text } from '@radix-ui/themes';
+import React, { useEffect, useState } from 'react';
 
 export default function Home() {
   const [backendRequest, setBackendRequest] = useState('');
-  const [PDF, setPDF] = useState<File | null>(null);
-
-  const onPDFChange = useCallback(
-    (e: ChangeEvent) => {
-      const target = e.target as HTMLInputElement;
-      if (target.files) {
-        const file = target.files[0];
-
-        if (file) {
-          setPDF(file);
-        } else {
-          setPDF(null);
-        }
-      }
-    },
-    [setPDF],
-  );
 
   //Make a request to the api at the /pdf endpoint
   useEffect(() => {
@@ -34,23 +16,17 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <Container size={'1'}>
-        <Flex direction={'column'} pb={'4'}>
-          <Heading>Placement</Heading>
-          <Text color="gray">You can upload your PDF here.</Text>
+      <Container size={'4'}>
+        <Flex direction={'column'} pb={'4'} gap={'2'} align={'center'}>
+          <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
+            Placement
+          </h1>
+          <Text color="gray">Upload your PDF to generate a layout.</Text>
           <Text color="gray">
-            <b>PDF:</b> {PDF ? PDF.name : 'Select a PDF from your computer'}
+            <b>Test backend request:</b>{' '}
+            {backendRequest == '' ? '...loading' : backendRequest}
           </Text>
-          <Text color="gray">
-            <b>Backend Request: </b>
-            {backendRequest ?? '...loading'}
-          </Text>
-          <Link href="/api/pdf">
-            <code className="font-mono font-bold">api/pdf.py</code>
-          </Link>
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Input id="picture" type="file" onChange={onPDFChange} />
-          </div>
+          <FileUpload />
         </Flex>
       </Container>
     </main>
