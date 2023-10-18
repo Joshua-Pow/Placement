@@ -9,6 +9,13 @@ const FileUpload = () => {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [pdf, setPdf] = useState<string | null>(null);
 
+  const clearInput = () => {
+    setPdf(null);
+    if (inputRef.current) {
+      inputRef.current.value = '';
+    }
+  };
+
   const onFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -21,6 +28,8 @@ const FileUpload = () => {
         });
         clearInput();
       }
+    } else {
+      clearInput();
     }
   };
 
@@ -28,12 +37,6 @@ const FileUpload = () => {
     //Insert backend request here
   };
 
-  const clearInput = () => {
-    setPdf(null);
-    if (inputRef.current) {
-      inputRef.current.value = '';
-    }
-  };
   return (
     <>
       <div className="grid w-full max-w-sm items-center gap-1.5">
