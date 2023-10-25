@@ -2,6 +2,8 @@ from flask import Flask, request
 from flask_cors import CORS
 from flask_restx import Api, Resource
 from api.util import calculate
+import os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -25,9 +27,13 @@ class Pdf(Resource):
         return {"message": string}
 
     def post(self):
+        path = os.getcwd() + "/api/pdf"
+        print("Current Directory", path)
         file = request.files['file']
+        file.save(os.path.join(path, secure_filename(file.filename)))
         file_content = file.read()
-        print("content", file_content)
+
+        #print("content", file_content)
         return {"message": file.filename}
 
 
