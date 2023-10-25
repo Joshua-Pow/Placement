@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS
 from flask_restx import Api, Resource
 from api.util import calculate
@@ -25,7 +25,10 @@ class Pdf(Resource):
         return {"message": string}
 
     def post(self):
-        return {"message": "Hello, World!"}
+        file = request.files['file']
+        file_content = file.read()
+        print("content", file_content)
+        return {"message": file.filename}
 
 
 if __name__ == "__main__":
