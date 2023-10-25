@@ -67,7 +67,7 @@ const FileUpload = () => {
         />
       </div>
       <Preview
-        filePath={String(filePath)}
+        filePath={filePath}
         clearInput={clearInput}
         uploadFile={uploadFile}
       />
