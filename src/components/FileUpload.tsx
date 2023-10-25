@@ -8,11 +8,11 @@ import axios from 'axios';
 const FileUpload = () => {
   const { toast } = useToast();
   const inputRef = React.useRef<HTMLInputElement>(null);
-  const [filePath, setFilePath] = useState<string | null>('');
+  const [filePath, setFilePath] = useState<string | null>(null);
   const [pdf, setPdf] = useState<string | Blob>('');
 
   const clearInput = () => {
-    setFilePath('');
+    setFilePath(null);
     if (inputRef.current) {
       inputRef.current.value = '';
     }
