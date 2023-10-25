@@ -39,7 +39,7 @@ const FileUpload = () => {
     [setFilePath, setPdf, toast],
   );
 
-  const uploadFile = useCallback(async () => {
+  const uploadFile = useCallback(() => {
     const formData = new FormData();
     formData.append('file', pdf);
     axios
