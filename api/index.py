@@ -22,7 +22,7 @@ api = Api(
 @api.route("/pdf")
 class Pdf(Resource):
     def get(self):
-        string = f"Hello, World! {calculate(1, 2)}"
+        string = f"Hello, World! {1+2}"
         print(string)
         return {"message": string}
 
