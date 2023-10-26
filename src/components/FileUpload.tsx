@@ -12,6 +12,7 @@ const FileUpload = () => {
   const [filePath, setFilePath] = useState<string | null>(null);
   const [pdf, setPdf] = useState<string | Blob>('');
   const [pdfUploaded, setPdfUploaded] = useState<boolean>(false);
+  const [svg, setSvg] = useState<string>('');
 
   const clearInput = () => {
     setFilePath(null);
@@ -53,6 +54,7 @@ const FileUpload = () => {
       .then((res) => {
         // Receive the filename sent to backend, error checking later
         console.log(res);
+        setSvg(res.data);
         setPdfUploaded(true);
       });
   }, [pdf]);
@@ -71,13 +73,15 @@ const FileUpload = () => {
         />
       </div>
       {pdfUploaded ? (
-        <div className="flex items-center space-x-4">
-          <Skeleton className="h-12 w-12 rounded-full" />
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-[250px]" />
-            <Skeleton className="h-4 w-[200px]" />
-          </div>
-        </div>
+        // <div className="flex items-center space-x-4">
+        //   <Skeleton className="h-12 w-12 rounded-full" />
+        //   <div className="space-y-2">
+        //     <Skeleton className="h-4 w-[250px]" />
+        //     <Skeleton className="h-4 w-[200px]" />
+        //   </div>
+        // </div>
+
+        <div dangerouslySetInnerHTML={{ __html: svg }} />
       ) : (
         <Preview
           filePath={filePath}
