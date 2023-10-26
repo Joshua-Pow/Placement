@@ -11,7 +11,8 @@ const FileUpload = () => {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [filePath, setFilePath] = useState<string | null>(null);
   const [pdf, setPdf] = useState<string | Blob>('');
-  const [pdfUploaded, setPdfUploaded] = useState<boolean>(false);
+  const [pdfUploading, setPdfUploading] = useState<boolean>(false);
+  const [svgString, setSvgString] = useState<string>('');
 
   const clearInput = () => {
     setFilePath(null);
@@ -42,6 +43,7 @@ const FileUpload = () => {
   );
 
   const uploadFile = useCallback(() => {
+    setPdfUploading(true);
     const formData = new FormData();
     formData.append('file', pdf);
     axios
@@ -53,7 +55,8 @@ const FileUpload = () => {
       .then((res) => {
         // Receive the filename sent to backend, error checking later
         console.log(res);
-        setPdfUploaded(true);
+        setSvgString(res.data);
+        setPdfUploading(false);
       });
   }, [pdf]);
 
@@ -62,7 +65,7 @@ const FileUpload = () => {
       <div className="grid w-full max-w-sm items-center gap-1.5">
         <Label htmlFor="picture">PDF:</Label>
         <Input
-          disabled={pdfUploaded}
+          disabled={pdfUploading}
           ref={inputRef}
           id="picture"
           type="file"
@@ -70,14 +73,18 @@ const FileUpload = () => {
           onChange={onFileUpload}
         />
       </div>
-      {pdfUploaded ? (
-        <div className="flex items-center space-x-4">
-          <Skeleton className="h-12 w-12 rounded-full" />
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-[250px]" />
-            <Skeleton className="h-4 w-[200px]" />
+      {pdfUploading ? (
+        svgString === '' ? (
+          <div className="flex items-center space-x-4">
+            <Skeleton className="h-12 w-12 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-[250px]" />
+              <Skeleton className="h-4 w-[200px]" />
+            </div>
           </div>
-        </div>
+        ) : (
+          <div dangerouslySetInnerHTML={{ __html: svgString }} />
+        )
       ) : (
         <Preview
           filePath={filePath}

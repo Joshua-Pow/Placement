@@ -65,7 +65,7 @@ def extract_from_image(filename: str):
     # save to a svg file
     with open("./api/simple_shapes.svg", "w+") as f:
         f.write(
-            f'<svg width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">'
+            f'<svg height="400" viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg">'
         )
 
         for c in contours:

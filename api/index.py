@@ -1,9 +1,10 @@
-from flask import Flask, request
+from flask import Flask, request, send_from_directory
 from flask_cors import CORS
 from flask_restx import Api, Resource
 from api.util import calculate
 import os
 from werkzeug.utils import secure_filename
+from api.extraction import convert_pdf_to_jpg, extract_from_image
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -29,12 +30,17 @@ class Pdf(Resource):
     def post(self):
         path = os.getcwd() + "/api/pdf"
         print("Current Directory", path)
-        file = request.files['file']
-        file.save(os.path.join(path, secure_filename(file.filename)))
-        file_content = file.read()
-
-        #print("content", file_content)
-        return {"message": file.filename}
+        file = request.files["file"]
+        if file and file.filename:
+            secureName = secure_filename(file.filename)
+            savePath = os.path.join(path, secureName)
+            file.save(savePath)
+            # convert_pdf_to_jpg(savePath) #TODO: convert whatever file uploaded to jpg and then extract
+            extract_from_image("./api/pattern_images/simple_shapes.jpg")
+            return send_from_directory("./", "simple_shapes.svg", as_attachment=True)
+        else:
+            print("Error processing file")
+            return {"message": "Error processing file"}
 
 
 if __name__ == "__main__":
