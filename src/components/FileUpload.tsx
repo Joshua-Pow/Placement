@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
 import Preview from '@/components/Preview';
 import { useToast } from '@/components/ui/use-toast';
 import axios from 'axios';
@@ -10,6 +11,7 @@ const FileUpload = () => {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [filePath, setFilePath] = useState<string | null>(null);
   const [pdf, setPdf] = useState<string | Blob>('');
+  const [pdfUploaded, setPdfUploaded] = useState<boolean>(false);
 
   const clearInput = () => {
     setFilePath(null);
@@ -51,6 +53,7 @@ const FileUpload = () => {
       .then((res) => {
         // Receive the filename sent to backend, error checking later
         console.log(res);
+        setPdfUploaded(true);
       });
   }, [pdf]);
 
@@ -59,6 +62,7 @@ const FileUpload = () => {
       <div className="grid w-full max-w-sm items-center gap-1.5">
         <Label htmlFor="picture">PDF:</Label>
         <Input
+          disabled={pdfUploaded}
           ref={inputRef}
           id="picture"
           type="file"
@@ -66,11 +70,21 @@ const FileUpload = () => {
           onChange={onFileUpload}
         />
       </div>
-      <Preview
-        filePath={filePath}
-        clearInput={clearInput}
-        uploadFile={uploadFile}
-      />
+      {pdfUploaded ? (
+        <div className="flex items-center space-x-4">
+          <Skeleton className="h-12 w-12 rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-[250px]" />
+            <Skeleton className="h-4 w-[200px]" />
+          </div>
+        </div>
+      ) : (
+        <Preview
+          filePath={filePath}
+          clearInput={clearInput}
+          uploadFile={uploadFile}
+        />
+      )}
     </>
   );
 };
