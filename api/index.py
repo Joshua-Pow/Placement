@@ -1,9 +1,10 @@
-from flask import Flask, request
+from flask import Flask, request, send_from_directory
 from flask_cors import CORS
 from flask_restx import Api, Resource
 from api.util import calculate
 import os
 from werkzeug.utils import secure_filename
+from api.extraction import convert_pdf_to_jpg, extract_from_image
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -29,11 +30,23 @@ class Pdf(Resource):
     def post(self):
         path = os.getcwd() + "/api/pdf"
         print("Current Directory", path)
-        file = request.files['file']
-        file.save(os.path.join(path, secure_filename(file.filename)))
-        file_content = file.read()
+        file = request.files["file"]
 
-        #print("content", file_content)
+        if file and file.filename:
+            safeFileName = secure_filename(file.filename)
+            filePath = os.path.join(path, safeFileName)
+            file.save(filePath)
+            # convert_pdf_to_jpg(filePath)
+            extract_from_image("./api/pattern_images/simple_shapes.jpg")
+
+            # Return the generated SVG file at the file path ./api/simple_shapes.svg
+            return send_from_directory("./", "simple_shapes.svg", as_attachment=True)
+
+        else:
+            print("No file found")
+            return {"message": "No file found"}
+
+        # print("content", file_content)
         return {"message": file.filename}
 
 
