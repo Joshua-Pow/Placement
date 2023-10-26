@@ -1,7 +1,6 @@
 from flask import Flask, request, send_from_directory
 from flask_cors import CORS
 from flask_restx import Api, Resource
-from api.util import calculate
 import os
 from werkzeug.utils import secure_filename
 from api.extraction import convert_pdf_to_jpg, extract_from_image
