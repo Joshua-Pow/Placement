@@ -1,7 +1,6 @@
 from flask import Flask, request, send_from_directory
 from flask_cors import CORS
 from flask_restx import Api, Resource
-from api.util import calculate
 import os
 from werkzeug.utils import secure_filename
 from api.extraction import convert_pdf_to_jpg, extract_from_image
@@ -23,7 +22,7 @@ api = Api(
 @api.route("/pdf")
 class Pdf(Resource):
     def get(self):
-        string = f"Hello, World! {calculate(1, 2)}"
+        string = f"Hello, World! {1+2}"
         print(string)
         return {"message": string}
 

@@ -7,7 +7,7 @@ const nextConfig = {
         destination:
           process.env.NODE_ENV === 'development'
             ? 'http://127.0.0.1:5328/:path*'
-            : '/api/',
+            : 'https://placement-backend-el85.onrender.com/:path*',
       },
     ];
   },

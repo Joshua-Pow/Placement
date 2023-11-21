@@ -1,11 +1,13 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-# *Before doing any of these make sure you are in the root `./Placement`* #
+# _Before doing any of these make sure you are in the root `./Placement`_
 
 ## Prerequisites
 
 1. Ensure you are using a modern version of Node.js `node -v` should be at least 18.X
-2. Create a Python virtual environment with: `python3 -m venv venv`
+2. Make sure you have Python 3.10.13 installed `python --version` should be at least 3.10.13
+   - Consider using [pyenv](https://github.com/pyenv/pyenv) to manage your Python versions
+3. Create a Python virtual environment with: `python -m venv venv`
 
 ## Getting Started
 
@@ -14,6 +16,12 @@ Activate the virtual environment with:
 ```bash
 Mac/Linux: source venv/bin/activate
 Windows: venv\Scripts\activate
+```
+
+Make sure the virtual environment is the correct version(3.10.13) of Python with:
+
+```bash
+python --version
 ```
 
 Install required packages with:

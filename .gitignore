@@ -1,7 +1,10 @@
 # Created by https://www.toptal.com/developers/gitignore/api/windows,macos,c++,nextjs,python,django
 # Edit at https://www.toptal.com/developers/gitignore?templates=windows,macos,c++,nextjs,python,django
 
-#Files
+#svg files in api folder
+api/**/*.svg
+
+#pdf files
 *.pdf
 
 ### C++ ###
