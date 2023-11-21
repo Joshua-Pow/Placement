@@ -5,6 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Preview from '@/components/Preview';
 import { useToast } from '@/components/ui/use-toast';
 import axios from 'axios';
+import EditSVGPage from './EditSVGPage';
 
 const FileUpload = () => {
   const { toast } = useToast();
@@ -62,7 +63,7 @@ const FileUpload = () => {
 
   return (
     <>
-      <div className="grid w-full max-w-sm items-center gap-1.5">
+      <div className="grid w-full max-w-2xl items-center gap-1.5">
         <Label htmlFor="picture">PDF:</Label>
         <Input
           disabled={pdfUploading}
@@ -73,8 +74,8 @@ const FileUpload = () => {
           onChange={onFileUpload}
         />
       </div>
-      {pdfUploading ? (
-        svgString === '' ? (
+      {svgString ? (
+        pdfUploading ? (
           <div className="flex items-center space-x-4">
             <Skeleton className="h-12 w-12 rounded-full" />
             <div className="space-y-2">
@@ -83,7 +84,7 @@ const FileUpload = () => {
             </div>
           </div>
         ) : (
-          <div dangerouslySetInnerHTML={{ __html: svgString }} />
+          <EditSVGPage svgString={svgString} />
         )
       ) : (
         <Preview
