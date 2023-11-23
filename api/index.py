@@ -27,15 +27,25 @@ class Pdf(Resource):
         return {"message": string}
 
     def post(self):
-        path = os.getcwd() + "/api/pdf"
-        print("Current Directory", path)
+        # Define the path for the 'pdf' folder
+        path = os.path.join(os.getcwd(), "api", "pdf")
+
+        # Create the 'pdf' folder if it does not exist
+        os.makedirs(path, exist_ok=True)
+
+        # Process the uploaded file
         file = request.files["file"]
         if file and file.filename:
+            # Secure the filename and save the file
             secureName = secure_filename(file.filename)
             savePath = os.path.join(path, secureName)
             file.save(savePath)
-            # convert_pdf_to_jpg(savePath) #TODO: convert whatever file uploaded to jpg and then extract
+
+            # TODO: convert the uploaded file to jpg and then extract
+            # convert_pdf_to_jpg(savePath)
             extract_from_image("./api/pattern_images/simple_shapes.jpg")
+
+            # Send the processed file as a response
             return send_from_directory("./", "simple_shapes.svg", as_attachment=True)
         else:
             print("Error processing file")
