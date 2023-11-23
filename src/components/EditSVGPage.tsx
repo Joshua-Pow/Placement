@@ -120,7 +120,9 @@ const EditSVGPage = ({ svgString, setPdfUploading }: Props) => {
   const onSaveClicked = useCallback(() => {
     setFinalSVG(paper.project.exportSVG());
     setPdfUploading(true);
-  }, []);
+  }, [setFinalSVG, setPdfUploading]);
+
+  console.log(finalSVG);
 
   return (
     <div>
