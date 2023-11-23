@@ -75,7 +75,27 @@ def parse_fabric_input_constraints(fabirc_height, fabric_max_length):
     pass
 
 
+def translate_polygons_to_SVG(polygons, viewbox_width, viewbox_height, new_filename):
+    with open(new_filename, "w+") as f:
+        f.write(
+            f'<svg viewBox="0 0 {viewbox_width} {viewbox_height}" xmlns="http://www.w3.org/2000/svg">'
+        )
+
+        for p in polygons:
+            c = p.contour
+            f.write('<path d="M')
+            for i in range(len(c)):
+                x, y = c[i]
+                f.write(f"{x} {y} ")
+            f.write('Z" fill="none" stroke="blue" stroke-width="3"/>')
+        f.write("</svg>")
+
+
 ## Usage ##
 # polygons = parse_svg('simple_shapes.svg')
-# print(len(polygons))
-# print(polygons[1])
+
+# container_max_x = 10000
+# container_max_y = 4000
+# rectangle_packing(polygons, container_max_x, container_max_y)
+
+# translate_polygons_to_SVG(polygons, 2000, 2000, "new_placement.svg")
