@@ -2,6 +2,7 @@ aniso8601==9.0.1
 attrs==23.1.0
 blinker==1.7.0
 click==8.1.7
+colorama==0.4.6
 Flask==2.3.3
 Flask-Cors==4.0.0
 flask-restx==1.1.0
@@ -23,6 +24,7 @@ pyrsistent==0.20.0
 pytz==2023.3.post1
 referencing==0.31.0
 rpds-py==0.13.1
+svg.path==6.3
 typing_extensions==4.8.0
 Werkzeug==3.0.1
 zipp==3.17.0
