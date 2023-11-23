@@ -13,7 +13,7 @@ const FileUpload = () => {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [filePath, setFilePath] = useState<string | null>(null);
   const [pdf, setPdf] = useState<string | Blob>('');
-  const [pdfUploading, setPdfUploading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [svgString, setSvgString] = useState<string>('');
 
   const clearInput = () => {
@@ -25,6 +25,7 @@ const FileUpload = () => {
 
   const onFileUpload = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
+      setLoading(true);
       const file = e.target.files?.[0];
       if (file) {
         if (file.type === 'application/pdf') {
@@ -40,12 +41,13 @@ const FileUpload = () => {
       } else {
         clearInput();
       }
+      setLoading(false);
     },
     [setFilePath, setPdf, toast],
   );
 
   const uploadFile = useCallback(() => {
-    setPdfUploading(true);
+    setLoading(true);
     const formData = new FormData();
     formData.append('file', pdf);
     axios
@@ -58,7 +60,7 @@ const FileUpload = () => {
         // Receive the filename sent to backend, error checking later
         console.log(res);
         setSvgString(res.data);
-        setPdfUploading(false);
+        setLoading(false);
       });
   }, [pdf]);
 
@@ -67,7 +69,7 @@ const FileUpload = () => {
       <div className="grid w-full max-w-2xl items-center gap-1.5">
         <Label htmlFor="picture">PDF:</Label>
         <Input
-          disabled={pdfUploading}
+          disabled={loading}
           ref={inputRef}
           id="picture"
           type="file"
@@ -75,21 +77,16 @@ const FileUpload = () => {
           onChange={onFileUpload}
         />
       </div>
-      {svgString ? (
-        pdfUploading ? (
-          <div className="flex items-center space-x-4">
-            <Skeleton className="h-12 w-12 rounded-full" />
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-[250px]" />
-              <Skeleton className="h-4 w-[200px]" />
-            </div>
+      {loading ? (
+        <div className="flex items-center space-x-4">
+          <Skeleton className="h-12 w-12 rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-[250px]" />
+            <Skeleton className="h-4 w-[200px]" />
           </div>
-        ) : (
-          <EditSVGPage
-            svgString={svgString}
-            setPdfUploading={setPdfUploading}
-          />
-        )
+        </div>
+      ) : svgString ? (
+        <EditSVGPage svgString={svgString} setPdfUploading={setLoading} />
       ) : (
         <Preview
           filePath={filePath}
