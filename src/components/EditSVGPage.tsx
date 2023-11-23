@@ -36,9 +36,8 @@ const EditSVGPage = ({ svgString, setPdfUploading }: Props) => {
 
       svgItem.children.forEach((child: paper.Path | paper.Shape) => {
         if (child instanceof paper.Path) {
-          child.strokeColor = new paper.Color('black');
-          child.fillColor = new paper.Color('white');
-          child.scale(0.5);
+          child.strokeColor = new paper.Color(255, 255, 255, 0.25);
+          child.fillColor = new paper.Color(255, 255, 255, 0.25);
 
           child.onMouseEnter = (event: paper.MouseEvent) => {
             console.log('mouseEnter', event);
@@ -120,9 +119,10 @@ const EditSVGPage = ({ svgString, setPdfUploading }: Props) => {
   const onSaveClicked = useCallback(() => {
     setFinalSVG(paper.project.exportSVG());
     setPdfUploading(true);
-  }, [setFinalSVG, setPdfUploading]);
 
-  console.log(finalSVG);
+    //TODO: Upload the new svg to the backend
+    console.log('finalSVG', finalSVG);
+  }, [finalSVG, setPdfUploading]);
 
   return (
     <div>
