@@ -29,10 +29,13 @@ const EditSVGPage = ({ svgString }: Props) => {
       svgItem.fitBounds(paper.view.bounds);
       svgItem.position = paper.view.center;
 
+      console.log(svgItem.children);
+
       svgItem.children.forEach((child: paper.Path | paper.Shape) => {
         if (child instanceof paper.Path) {
           child.strokeColor = new paper.Color('black');
           child.fillColor = new paper.Color('white');
+          child.scale(0.5);
 
           child.onMouseEnter = (event: paper.MouseEvent) => {
             console.log('mouseEnter', event);
@@ -113,7 +116,16 @@ const EditSVGPage = ({ svgString }: Props) => {
 
   return (
     <canvas
-      style={{ width: '100%', height: '500px' }}
+      style={{
+        width: '100%',
+        height: '500px',
+        backgroundRepeat: 'no-repeat', // Prevents the background image from repeating
+        backgroundPosition: 'center', // Centers the background image
+        backgroundSize: 'contain', // Adjust this as needed ('cover' or 'contain')
+        backgroundImage: `url('data:image/svg+xml;utf8,${encodeURIComponent(
+          svgString,
+        )}')`,
+      }}
       ref={canvasRef}
       id="myCanvas"
     ></canvas>

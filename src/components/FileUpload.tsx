@@ -85,7 +85,9 @@ const FileUpload = () => {
             </div>
           </div>
         ) : (
-          <EditSVGPage svgString={svgString} />
+          <div>
+            <EditSVGPage svgString={svgString} />
+          </div>
         )
       ) : (
         <Preview
