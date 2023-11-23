@@ -85,9 +85,10 @@ const FileUpload = () => {
             </div>
           </div>
         ) : (
-          <div>
-            <EditSVGPage svgString={svgString} />
-          </div>
+          <EditSVGPage
+            svgString={svgString}
+            setPdfUploading={setPdfUploading}
+          />
         )
       ) : (
         <Preview

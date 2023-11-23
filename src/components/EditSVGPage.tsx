@@ -1,9 +1,11 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import paper from 'paper';
+import { Button } from '@/components/ui/button';
 import DOMPurify from 'dompurify';
 
 type Props = {
   svgString: string;
+  setPdfUploading: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const hitOptions = {
@@ -13,7 +15,8 @@ const hitOptions = {
   tolerance: 5,
 };
 
-const EditSVGPage = ({ svgString }: Props) => {
+const EditSVGPage = ({ svgString, setPdfUploading }: Props) => {
+  const [finalSVG, setFinalSVG] = useState<string | SVGElement>('');
   const sanitizedSvg = DOMPurify.sanitize(svgString, {
     USE_PROFILES: { svg: true },
   });
@@ -114,21 +117,31 @@ const EditSVGPage = ({ svgString }: Props) => {
     };
   }, [sanitizedSvg]);
 
+  const onSaveClicked = useCallback(() => {
+    setFinalSVG(paper.project.exportSVG());
+    setPdfUploading(true);
+  }, []);
+
   return (
-    <canvas
-      style={{
-        width: '100%',
-        height: '500px',
-        backgroundRepeat: 'no-repeat', // Prevents the background image from repeating
-        backgroundPosition: 'center', // Centers the background image
-        backgroundSize: 'contain', // Adjust this as needed ('cover' or 'contain')
-        backgroundImage: `url('data:image/svg+xml;utf8,${encodeURIComponent(
-          svgString,
-        )}')`,
-      }}
-      ref={canvasRef}
-      id="myCanvas"
-    ></canvas>
+    <div>
+      <canvas
+        style={{
+          width: '100%',
+          height: '500px',
+          backgroundRepeat: 'no-repeat', // Prevents the background image from repeating
+          backgroundPosition: 'center', // Centers the background image
+          backgroundSize: 'contain', // Adjust this as needed ('cover' or 'contain')
+          backgroundImage: `url('data:image/svg+xml;utf8,${encodeURIComponent(
+            svgString,
+          )}')`,
+        }}
+        ref={canvasRef}
+        id="myCanvas"
+      ></canvas>
+      <div className="float-right">
+        <Button onClick={onSaveClicked}>Save</Button>
+      </div>
+    </div>
   );
 };
 
