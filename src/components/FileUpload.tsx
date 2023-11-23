@@ -5,7 +5,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Preview from '@/components/Preview';
 import { useToast } from '@/components/ui/use-toast';
 import axios from 'axios';
-import EditSVGPage from './EditSVGPage';
+import dynamic from 'next/dynamic';
+const EditSVGPage = dynamic(() => import('./EditSVGPage'), { ssr: false });
 
 const FileUpload = () => {
   const { toast } = useToast();
