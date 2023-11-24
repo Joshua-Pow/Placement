@@ -4,6 +4,9 @@
 #svg files in api folder
 api/**/*.svg
 
+#json files in api folder
+api/**/*.json
+
 #pdf files
 *.pdf
 
