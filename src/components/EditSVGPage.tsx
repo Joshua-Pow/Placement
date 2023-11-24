@@ -127,7 +127,6 @@ const EditSVGPage = ({ svgString, setLoading }: Props) => {
     const svg = paper.project.exportSVG({ asString: true }) as string;
     setLoading(true);
 
-    console.log('finalSVG', svg);
     postSVG(svg);
   }, [postSVG, setLoading]);
 
