@@ -61,7 +61,7 @@ def parse_svg(svgString: str):
             bottom_y,
             right_x - left_x,
             top_y - bottom_y,
-            margin=space_margin,
+            bonding_box_margin=space_margin,
             pid=num_polygons,
         )
         polygons.append(p)
