@@ -1,15 +1,16 @@
 class Container(object):
     """
-        Defines the container aka fabric attributes
+    Defines the container aka fabric attributes
     """
-    def __init__(self, fabric_height, fabric_max_length=None):
+
+    def __init__(self, fabric_width, fabric_max_length=None):
         """
-            fabric_height: fixed input from user
-            fabric_max_length: max yardage (NOTE: idk what units we're in, I'm just using whatever rn from the SVG)
+        fabric_width: fixed input from user
+        fabric_max_length: max yardage (NOTE: idk what units we're in, I'm just using whatever rn from the SVG)
         """
 
         # should be an immutable attribute
-        self.fabric_height = fabric_height
+        self.fabric_width = fabric_width
 
         # max length that defines the container
         self.fabric_max_length = fabric_max_length

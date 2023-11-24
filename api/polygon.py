@@ -58,6 +58,7 @@ class Polygon(object):
     def bounding_box_area(self):
         """
         Area of the rectangle bounding box.
+        returns list of points in a polygon
         """
         return (self.bbox_h) * (self.bbox_w)
 
