@@ -5,13 +5,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Preview from '@/components/Preview';
 import { useToast } from '@/components/ui/use-toast';
 import axios from 'axios';
+import dynamic from 'next/dynamic';
+const EditSVGPage = dynamic(() => import('./EditSVGPage'), { ssr: false });
 
 const FileUpload = () => {
   const { toast } = useToast();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [filePath, setFilePath] = useState<string | null>(null);
   const [pdf, setPdf] = useState<string | Blob>('');
-  const [pdfUploading, setPdfUploading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [svgString, setSvgString] = useState<string>('');
 
   const clearInput = () => {
@@ -23,6 +25,7 @@ const FileUpload = () => {
 
   const onFileUpload = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
+      setLoading(true);
       const file = e.target.files?.[0];
       if (file) {
         if (file.type === 'application/pdf') {
@@ -38,12 +41,13 @@ const FileUpload = () => {
       } else {
         clearInput();
       }
+      setLoading(false);
     },
     [setFilePath, setPdf, toast],
   );
 
   const uploadFile = useCallback(() => {
-    setPdfUploading(true);
+    setLoading(true);
     const formData = new FormData();
     formData.append('file', pdf);
     axios
@@ -56,16 +60,16 @@ const FileUpload = () => {
         // Receive the filename sent to backend, error checking later
         console.log(res);
         setSvgString(res.data);
-        setPdfUploading(false);
+        setLoading(false);
       });
   }, [pdf]);
 
   return (
     <>
-      <div className="grid w-full max-w-sm items-center gap-1.5">
+      <div className="grid w-full max-w-2xl items-center gap-1.5">
         <Label htmlFor="picture">PDF:</Label>
         <Input
-          disabled={pdfUploading}
+          disabled={loading}
           ref={inputRef}
           id="picture"
           type="file"
@@ -73,18 +77,16 @@ const FileUpload = () => {
           onChange={onFileUpload}
         />
       </div>
-      {pdfUploading ? (
-        svgString === '' ? (
-          <div className="flex items-center space-x-4">
-            <Skeleton className="h-12 w-12 rounded-full" />
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-[250px]" />
-              <Skeleton className="h-4 w-[200px]" />
-            </div>
+      {loading ? (
+        <div className="flex items-center space-x-4">
+          <Skeleton className="h-12 w-12 rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-[250px]" />
+            <Skeleton className="h-4 w-[200px]" />
           </div>
-        ) : (
-          <div dangerouslySetInnerHTML={{ __html: svgString }} />
-        )
+        </div>
+      ) : svgString ? (
+        <EditSVGPage svgString={svgString} setLoading={setLoading} />
       ) : (
         <Preview
           filePath={filePath}
