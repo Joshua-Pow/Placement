@@ -1,7 +1,7 @@
 from svg.path import parse_path
 from svg.path.path import Line
 from xml.dom import minidom
-from polygon import Polygon
+from api.polygon import Polygon
 
 
 def parse_svg(svgString: str):
