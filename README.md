@@ -23,8 +23,13 @@ Make sure the virtual environment is the correct version(3.10.13) of Python with
 ```bash
 python --version
 ```
+Install required python libraries with:
 
-Install required packages with:
+```bash
+pip install -r requirements.txt
+```
+
+Install required node modules with:
 
 ```bash
 npm install
