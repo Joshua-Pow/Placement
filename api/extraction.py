@@ -73,5 +73,5 @@ def extract_from_image(filename: str):
             for i in range(len(c)):
                 x, y = c[i][0]
                 f.write(f"{x} {y} ")
-            f.write('Z" fill="none" stroke="blue" stroke-width="3"/>')
+            f.write('Z" fill="none" stroke="yellow" stroke-width="3"/>')
         f.write("</svg>")
