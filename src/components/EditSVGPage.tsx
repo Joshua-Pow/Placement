@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import paper from 'paper';
 import { Button } from '@/components/ui/button';
 import DOMPurify from 'dompurify';
+import axios from 'axios';
 
 type Props = {
   svgString: string;
@@ -16,11 +17,17 @@ const hitOptions = {
 };
 
 const EditSVGPage = ({ svgString, setLoading }: Props) => {
-  const [finalSVG, setFinalSVG] = useState<string | SVGElement>('');
   const sanitizedSvg = DOMPurify.sanitize(svgString, {
     USE_PROFILES: { svg: true },
   });
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const postSVG = useCallback((svg: string) => {
+    //PUT to the /api/pdf/ route
+    axios.put('/api/pdf/', {
+      svg: svg,
+    });
+  }, []);
 
   useEffect(() => {
     paper.setup(canvasRef.current as HTMLCanvasElement);
@@ -36,8 +43,8 @@ const EditSVGPage = ({ svgString, setLoading }: Props) => {
 
       svgItem.children.forEach((child: paper.Path | paper.Shape) => {
         if (child instanceof paper.Path) {
-          child.strokeColor = new paper.Color(255, 255, 255, 0.25);
-          child.fillColor = new paper.Color(255, 255, 255, 0.25);
+          child.strokeColor = new paper.Color(128, 128, 128, 0.25);
+          child.fillColor = new paper.Color(128, 128, 128, 0.25);
 
           child.onMouseEnter = (event: paper.MouseEvent) => {
             console.log('mouseEnter', event);
@@ -117,12 +124,12 @@ const EditSVGPage = ({ svgString, setLoading }: Props) => {
   }, [sanitizedSvg]);
 
   const onSaveClicked = useCallback(() => {
-    setFinalSVG(paper.project.exportSVG());
+    const svg = paper.project.exportSVG({ asString: true }) as string;
     setLoading(true);
 
-    //TODO: Upload the new svg to the backend
-    console.log('finalSVG', finalSVG);
-  }, [finalSVG, setLoading]);
+    console.log('finalSVG', svg);
+    postSVG(svg);
+  }, [postSVG, setLoading]);
 
   return (
     <div>

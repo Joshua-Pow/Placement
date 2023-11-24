@@ -4,6 +4,7 @@ from flask_restx import Api, Resource
 import os
 from werkzeug.utils import secure_filename
 from api.extraction import convert_pdf_to_jpg, extract_from_image
+from api.parse_svg_input_constaints import parse_svg
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -50,6 +51,16 @@ class Pdf(Resource):
         else:
             print("Error processing file")
             return {"message": "Error processing file"}
+
+    def put(self):  # Used for sending new user confirmed svg string to run algorithm on
+        # Take the svg string from the request and parse it to polygons
+        svg = request.get_json()["svg"]
+        print(f"svg_string: {svg}")
+
+        polygons = parse_svg(svg)
+        for polygon in polygons:
+            print(polygon)
+        return {"message": "PUT"}
 
 
 if __name__ == "__main__":
