@@ -152,7 +152,9 @@ const EditSVGPage = ({ svgString, setLoading }: Props) => {
         id="myCanvas"
       ></canvas>
       <div className="float-right">
-        <Button onClick={onClearClicked}>Clear</Button>
+        <Button style={{ marginRight: 5 }} onClick={onClearClicked}>
+          Reset
+        </Button>
         <Button onClick={onSaveClicked}>Save</Button>
       </div>
     </div>
