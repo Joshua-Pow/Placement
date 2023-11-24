@@ -5,7 +5,7 @@ import DOMPurify from 'dompurify';
 
 type Props = {
   svgString: string;
-  setPdfUploading: React.Dispatch<React.SetStateAction<boolean>>;
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const hitOptions = {
@@ -15,7 +15,7 @@ const hitOptions = {
   tolerance: 5,
 };
 
-const EditSVGPage = ({ svgString, setPdfUploading }: Props) => {
+const EditSVGPage = ({ svgString, setLoading }: Props) => {
   const [finalSVG, setFinalSVG] = useState<string | SVGElement>('');
   const sanitizedSvg = DOMPurify.sanitize(svgString, {
     USE_PROFILES: { svg: true },
@@ -118,11 +118,11 @@ const EditSVGPage = ({ svgString, setPdfUploading }: Props) => {
 
   const onSaveClicked = useCallback(() => {
     setFinalSVG(paper.project.exportSVG());
-    setPdfUploading(true);
+    setLoading(true);
 
     //TODO: Upload the new svg to the backend
     console.log('finalSVG', finalSVG);
-  }, [finalSVG, setPdfUploading]);
+  }, [finalSVG, setLoading]);
 
   return (
     <div>
