@@ -151,7 +151,7 @@ const EditSVGPage = ({ svgString, setLoading }: Props) => {
         ref={canvasRef}
         id="myCanvas"
       ></canvas>
-      <div className="float-right">
+      <div className="flex justify-between">
         <Button style={{ marginRight: 5 }} onClick={onClearClicked}>
           Reset
         </Button>
