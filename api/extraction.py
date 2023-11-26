@@ -100,7 +100,7 @@ def extract_from_image(filename_paths):
                     if i != 0:
                         y += pages_height[i - 1]
                     f.write(f"{x} {y} ")
-                f.write('Z" fill="none" stroke="yellow" stroke-width="3"/>')
+                f.write('Z" fill="none" stroke="#6d28d9" stroke-width="15"/>')
         f.write("</svg>")
 
     return output_svg_path

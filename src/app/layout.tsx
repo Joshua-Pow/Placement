@@ -2,8 +2,10 @@ import './globals.css';
 import '@radix-ui/themes/styles.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { Theme } from '@radix-ui/themes';
 import { Toaster } from '@/components/ui/toaster';
+import { Providers } from './providers';
+import NavBar from '@/components/NavBar';
+import Footer from '@/components/Footer';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -19,9 +21,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <Theme appearance="dark">{children}</Theme>
-        <Toaster />
+      <body
+        className={
+          inter.className +
+          ' scrollbar-thumb-rounded-full scrollbar-thin scrollbar-thumb-primary scrollbar-track-transparent'
+        }
+      >
+        <Providers>
+          <NavBar />
+          {children}
+          <Toaster />
+          <Footer />
+        </Providers>
       </body>
     </html>
   );

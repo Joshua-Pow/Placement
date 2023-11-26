@@ -6,6 +6,7 @@ import Preview from '@/components/Preview';
 import { useToast } from '@/components/ui/use-toast';
 import axios from 'axios';
 import dynamic from 'next/dynamic';
+import IterationVisualizer from './IterationVisualizer';
 const EditSVGPage = dynamic(() => import('./EditSVGPage'), { ssr: false });
 
 const FileUpload = () => {
@@ -15,6 +16,7 @@ const FileUpload = () => {
   const [pdf, setPdf] = useState<string | Blob>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [svgString, setSvgString] = useState<string>('');
+  const [submitted, setSubmitted] = useState<boolean>(false);
 
   const clearInput = () => {
     setFilePath(null);
@@ -26,6 +28,8 @@ const FileUpload = () => {
   const onFileUpload = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setLoading(true);
+      setSubmitted(false);
+      setSvgString('');
       const file = e.target.files?.[0];
       if (file) {
         if (file.type === 'application/pdf') {
@@ -60,13 +64,52 @@ const FileUpload = () => {
         // Receive the filename sent to backend, error checking later
         console.log(res);
         setSvgString(res.data);
+        toast({
+          variant: 'default',
+          description: 'File uploaded successfully!',
+        });
         setLoading(false);
       });
-  }, [pdf]);
+  }, [pdf, toast]);
+
+  const postSVG = useCallback(
+    (svg: string) => {
+      //PUT to the /api/pdf/ route
+      axios
+        .put('/api/pdf/', {
+          svg: svg,
+        })
+        .then((response) => {
+          toast({
+            variant: 'default',
+            description: 'File submitted successfully!',
+          });
+          const id = response.data.id;
+          axios.get(`/api/poll/`, { params: { id: id } }).then((response) => {
+            const svg = response.data;
+            console.log('svg', svg);
+            setSvgString(svg);
+          });
+        });
+    },
+    [toast],
+  );
+
+  const shapeUpload = useCallback(
+    (svg: string) => {
+      setLoading(true);
+      setSubmitted(false);
+      // const svg = paper.project.exportSVG({ asString: true }) as string;
+      postSVG(svg);
+      setSubmitted(true);
+      setLoading(false);
+    },
+    [postSVG],
+  );
 
   return (
     <>
-      <div className="grid w-full max-w-2xl items-center gap-1.5">
+      <div className="grid w-full max-w-2xl items-center gap-1.5 pb-1.5">
         <Label htmlFor="picture">PDF:</Label>
         <Input
           disabled={loading}
@@ -86,7 +129,62 @@ const FileUpload = () => {
           </div>
         </div>
       ) : svgString ? (
-        <EditSVGPage svgString={svgString} setLoading={setLoading} />
+        submitted ? (
+          <IterationVisualizer
+            iterations={[
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+              { svg: svgString },
+            ]}
+          />
+        ) : (
+          <EditSVGPage
+            svgString={svgString}
+            setLoading={setLoading}
+            shapeUpload={shapeUpload}
+          />
+        )
       ) : (
         <Preview
           filePath={filePath}
