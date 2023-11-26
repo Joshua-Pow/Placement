@@ -3,9 +3,9 @@ import numpy as np
 from pdf2image import pdf2image
 
 
-def convert_pdf_to_jpg(filename: str):
+def convert_pdf_to_png(filename: str):
     """
-    Converts a pdf to individual jpg images and save them in the api/pattern_images folder.
+    Converts a pdf to individual png images and save them in the api/pattern_images folder.
 
         Parameters:
             filename (str): path to a pdf file
@@ -18,7 +18,7 @@ def convert_pdf_to_jpg(filename: str):
 
     image_paths = []
     for i in range(len(pdf_images)):
-        output_path = "./api/pattern_images/pattern_page_" + str(i + 1) + ".jpg"
+        output_path = "./api/pattern_images/pattern_page_" + str(i + 1) + ".png"
         pdf_images[i].save(output_path)
         image_paths.append(output_path)
 
@@ -30,7 +30,7 @@ def extract_from_image(filename_paths):
     Extracts shape contours from an image and save as SVG paths.
 
         Parameters:
-            filename_paths: paths to jpg images
+            filename_paths: paths to images
 
         Returns:
             output_svg_path: path to SVG file

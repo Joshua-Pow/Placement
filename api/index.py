@@ -4,7 +4,7 @@ from flask_restx import Api, Resource
 import os
 import json
 from werkzeug.utils import secure_filename
-from api.extraction import convert_pdf_to_jpg, extract_from_image
+from api.extraction import convert_pdf_to_png, extract_from_image
 from api.parse_svg_input_constaints import parse_svg, translate_polygons_to_SVG
 from api.polygon import Polygon
 from api.rectangle_nesting import rectangle_packing
@@ -46,7 +46,7 @@ class Pdf(Resource):
             file.save(savePath)
 
             # TODO: better file path naming
-            image_paths = convert_pdf_to_jpg(savePath)
+            image_paths = convert_pdf_to_png(savePath)
             svg_output_path = extract_from_image(image_paths)
             # Send the processed file as a response
             return send_from_directory("./", "simple_shapes.svg", as_attachment=True)
