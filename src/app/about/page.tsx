@@ -102,7 +102,7 @@ export default function About() {
               <Badge>Backend</Badge>
               <p className="text-zinc-500 dark:text-zinc-400">
                 Textile expert with a rich history in algorithmic Python,
-                blending fabric artistry with tech-driven industry solutions.
+                combining fabric artistry with tech-driven industry solutions.
               </p>
               <Link
                 className="font-medium underline"

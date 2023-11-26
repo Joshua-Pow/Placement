@@ -69,17 +69,6 @@ module.exports = {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: 0 },
         },
-        tilt: {
-          '0%, 50%, 100%': {
-            transform: 'rotate(0deg)',
-          },
-          '25%': {
-            transform: 'rotate(0.5deg)',
-          },
-          '75%': {
-            transform: 'rotate(-0.5deg)',
-          },
-        },
         'gradient-foreground-1': {
           'from, 16.667%, to': {
             opacity: 1,
@@ -138,7 +127,6 @@ module.exports = {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        tilt: 'tilt 10s infinite linear',
         'gradient-background-1': 'gradient-background-1 8s infinite',
         'gradient-foreground-1': 'gradient-foreground-1 8s infinite',
         'gradient-background-2': 'gradient-background-2 8s infinite',
