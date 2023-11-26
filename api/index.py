@@ -45,10 +45,9 @@ class Pdf(Resource):
             savePath = os.path.join(path, secureName)
             file.save(savePath)
 
-            # TODO: convert the uploaded file to jpg and then extract
-            # convert_pdf_to_jpg(savePath)
-            extract_from_image("./api/pattern_images/simple_shapes.jpg")
-
+            # TODO: better file path naming
+            image_paths = convert_pdf_to_jpg(savePath)
+            svg_output_path = extract_from_image(image_paths)
             # Send the processed file as a response
             return send_from_directory("./", "simple_shapes.svg", as_attachment=True)
         else:
