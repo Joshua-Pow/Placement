@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import paper from 'paper';
 import { Button } from '@/components/ui/button';
 import DOMPurify from 'dompurify';
@@ -21,6 +21,7 @@ const EditSVGPage = ({ svgString, setLoading }: Props) => {
     USE_PROFILES: { svg: true },
   });
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [resetCount, setResetCount] = useState<number>(0);
 
   const postSVG = useCallback((svg: string) => {
     //PUT to the /api/pdf/ route
@@ -121,7 +122,7 @@ const EditSVGPage = ({ svgString, setLoading }: Props) => {
         path.position = (path.position as paper.Point).add(event.delta);
       }
     };
-  }, [sanitizedSvg]);
+  }, [sanitizedSvg, resetCount]);
 
   const onSaveClicked = useCallback(() => {
     const svg = paper.project.exportSVG({ asString: true }) as string;
@@ -129,6 +130,10 @@ const EditSVGPage = ({ svgString, setLoading }: Props) => {
 
     postSVG(svg);
   }, [postSVG, setLoading]);
+
+  const onClearClicked = useCallback(() => {
+    setResetCount((reset) => reset + 1);
+  }, [setResetCount]);
 
   return (
     <div>
@@ -146,7 +151,10 @@ const EditSVGPage = ({ svgString, setLoading }: Props) => {
         ref={canvasRef}
         id="myCanvas"
       ></canvas>
-      <div className="float-right">
+      <div className="flex justify-between">
+        <Button style={{ marginRight: 5 }} onClick={onClearClicked}>
+          Reset
+        </Button>
         <Button onClick={onSaveClicked}>Save</Button>
       </div>
     </div>
