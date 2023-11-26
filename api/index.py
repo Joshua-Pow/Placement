@@ -125,8 +125,8 @@ class Poll(Resource):
 
         translate_polygons_to_SVG(
             polygonArray,
-            3000,
             2000,
+            1000,
             f"api/svg/pattern_page_{id}.svg",
         )
         return send_from_directory(

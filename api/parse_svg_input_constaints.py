@@ -87,7 +87,7 @@ def translate_polygons_to_SVG(polygons, viewbox_width, viewbox_height, new_filen
             for i in range(len(c)):
                 x, y = c[i]
                 f.write(f"{x} {y} ")
-            f.write('Z" fill="none" stroke="blue" stroke-width="3"/>')
+            f.write('Z" fill="none" stroke="hsl(var(--primary))" stroke-width="3"/>')
         f.write("</svg>")
 
 

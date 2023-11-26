@@ -2,11 +2,11 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import paper from 'paper';
 import { Button } from '@/components/ui/button';
 import DOMPurify from 'dompurify';
-import axios from 'axios';
 
 type Props = {
   svgString: string;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  shapeUpload: (svg: string) => void;
 };
 
 const hitOptions = {
@@ -16,19 +16,13 @@ const hitOptions = {
   tolerance: 5,
 };
 
-const EditSVGPage = ({ svgString, setLoading }: Props) => {
+const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
   const sanitizedSvg = DOMPurify.sanitize(svgString, {
     USE_PROFILES: { svg: true },
   });
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [resetCount, setResetCount] = useState<number>(0);
-
-  const postSVG = useCallback((svg: string) => {
-    //PUT to the /api/pdf/ route
-    axios.put('/api/pdf/', {
-      svg: svg,
-    });
-  }, []);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_resetCount, setResetCount] = useState<number>(0);
 
   useEffect(() => {
     paper.setup(canvasRef.current as HTMLCanvasElement);
@@ -44,8 +38,9 @@ const EditSVGPage = ({ svgString, setLoading }: Props) => {
 
       svgItem.children.forEach((child: paper.Path | paper.Shape) => {
         if (child instanceof paper.Path) {
-          child.strokeColor = new paper.Color(128, 128, 128, 0.25);
-          child.fillColor = new paper.Color(128, 128, 128, 0.25);
+          child.strokeWidth = 2;
+          child.strokeColor = new paper.Color('#9a6be580');
+          child.fillColor = new paper.Color('#c8adf180');
 
           child.onMouseEnter = (event: paper.MouseEvent) => {
             console.log('mouseEnter', event);
@@ -122,14 +117,12 @@ const EditSVGPage = ({ svgString, setLoading }: Props) => {
         path.position = (path.position as paper.Point).add(event.delta);
       }
     };
-  }, [sanitizedSvg, resetCount]);
 
-  const onSaveClicked = useCallback(() => {
-    const svg = paper.project.exportSVG({ asString: true }) as string;
-    setLoading(true);
-
-    postSVG(svg);
-  }, [postSVG, setLoading]);
+    return () => {
+      // Cleanup
+      paper.project.clear();
+    };
+  }, [sanitizedSvg, _resetCount]);
 
   const onClearClicked = useCallback(() => {
     setResetCount((reset) => reset + 1);
@@ -152,10 +145,20 @@ const EditSVGPage = ({ svgString, setLoading }: Props) => {
         id="myCanvas"
       ></canvas>
       <div className="flex justify-between">
-        <Button style={{ marginRight: 5 }} onClick={onClearClicked}>
+        <Button
+          variant="secondary"
+          style={{ marginRight: 5 }}
+          onClick={onClearClicked}
+        >
           Reset
         </Button>
-        <Button onClick={onSaveClicked}>Save</Button>
+        <Button
+          onClick={() =>
+            shapeUpload(paper.project.exportSVG({ asString: true }) as string)
+          }
+        >
+          Save
+        </Button>
       </div>
     </div>
   );

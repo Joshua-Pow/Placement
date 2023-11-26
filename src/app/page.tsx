@@ -1,6 +1,7 @@
 'use client';
 
 import FileUpload from '@/components/FileUpload';
+import Status from '@/components/Status';
 import { Container, Flex, Text } from '@radix-ui/themes';
 import React, { useEffect, useState } from 'react';
 
@@ -15,17 +16,16 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+    <main className="flex min-h-[calc(100vh-9rem)] flex-col items-center justify-between p-24">
       <Container size={'4'}>
-        <Flex direction={'column'} pb={'4'} gap={'2'} align={'center'}>
+        <Flex direction={'column'} pb={'4'} gap={'4'} align={'center'}>
           <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
-            Placement
+            Fit &apos;N Place
           </h1>
-          <Text color="gray">Upload your PDF to generate a layout.</Text>
-          <Text color="gray">
-            <b>Test backend request:</b>{' '}
-            {backendRequest == '' ? '...loading' : backendRequest}
+          <Text className="pb-2" color="gray">
+            Upload your PDF to generate a layout.
           </Text>
+          <Status request={backendRequest ? 'ACTIVE' : ''} />
           <FileUpload />
         </Flex>
       </Container>
