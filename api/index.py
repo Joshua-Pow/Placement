@@ -8,6 +8,7 @@ from api.extraction import convert_pdf_to_jpg, extract_from_image
 from api.parse_svg_input_constaints import parse_svg, translate_polygons_to_SVG
 from api.polygon import Polygon
 from api.rectangle_nesting import rectangle_packing
+from PyPDF2 import PdfFileReader
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -44,6 +45,16 @@ class Pdf(Resource):
             secureName = secure_filename(file.filename)
             savePath = os.path.join(path, secureName)
             file.save(savePath)
+
+            with io.open(path, mode="rb") as f:
+                input_pdf = PdfFileReader(f)
+                media_box = input_pdf.getPage(0).mediaBox
+
+                min_pt = media_box.lowerLeft
+                max_pt = media_box.upperRight
+
+                pdf_width = max_pt[0] - min_pt[0]
+                pdf_height = max_pt[1] - min_pt[1]
 
             # TODO: convert the uploaded file to jpg and then extract
             # convert_pdf_to_jpg(savePath)
