@@ -55,9 +55,9 @@ class Resolution(object):
         scale = get_scaling_factor(unit="inch")
         actual_fabric_length = bounding_box_length * scale
         """
-        if (unit[0]=="i") { #inch
+        if (unit[0]=="i"): #inch
             return ((self.output_width_inch*self.output_height_inch) / (self.width*self.height))
-        }
+        
         return ((self.output_width_cm*self.output_height_cm) / (self.width*self.height))
 
 

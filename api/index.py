@@ -9,7 +9,6 @@ from api.parse_svg_input_constaints import parse_svg, translate_polygons_to_SVG
 from api.polygon import Polygon
 from api.resolution import Resolution
 from api.rectangle_nesting import rectangle_packing
-from PyPDF2 import PdfFileReader
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
