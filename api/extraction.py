@@ -61,6 +61,13 @@ def extract_from_image(filename: str):
 
     height, width = imgray.shape
     print("height:", height, "width:", width)
+    # store resolution
+    with open("./api/resolution.svg", "w+") as f:
+        f.write(
+            f'pixel_width: {width} pixel_height: {height}'
+        )
+        f.close()
+
 
     # save to a svg file
     with open("./api/simple_shapes.svg", "w+") as f:
@@ -75,3 +82,4 @@ def extract_from_image(filename: str):
                 f.write(f"{x} {y} ")
             f.write('Z" fill="none" stroke="yellow" stroke-width="3"/>')
         f.write("</svg>")
+        f.close()

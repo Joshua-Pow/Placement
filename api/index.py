@@ -46,16 +46,6 @@ class Pdf(Resource):
             savePath = os.path.join(path, secureName)
             file.save(savePath)
 
-            with io.open(path, mode="rb") as f:
-                input_pdf = PdfFileReader(f)
-                media_box = input_pdf.getPage(0).mediaBox
-
-                min_pt = media_box.lowerLeft
-                max_pt = media_box.upperRight
-
-                pdf_width = max_pt[0] - min_pt[0]
-                pdf_height = max_pt[1] - min_pt[1]
-
             # TODO: convert the uploaded file to jpg and then extract
             # convert_pdf_to_jpg(savePath)
             extract_from_image("./api/pattern_images/simple_shapes.jpg")
