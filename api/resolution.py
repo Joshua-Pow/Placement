@@ -33,8 +33,20 @@ class Resolution(object):
             self.width, self.height
         )
     
+    def get_final_yardage(self, polygonArray, unit="inch"):
+        """
+        Calculate final pattern yardage requirement given array of polygons
+        Returns a tuple representing width, height in specified units
 
-    def get_scaling_factor(self, unit="inch"):
+        polygonArray: a list of Polygon types containing bbox_low_x/y and width/height
+        unit: cm or inches
+        """
+        pixel_w_h = self._get_bounding_box_length_width(self, polygonArray)
+        real_width = self._get_real_world_yardage(self, pixel_w_h[0], unit)
+        real_height = self._get_real_world_yardage(self, pixel_w_h[1], unit)
+        return real_width, real_height
+
+    def _get_scaling_factor(self, unit="inch"):
         """
         Get a scaling factor to pixel number to cm or inch number
         unit: cm or inches
@@ -49,9 +61,23 @@ class Resolution(object):
         return ((self.output_width_cm*self.output_height_cm) / (self.width*self.height))
 
 
-    def get_real_world_yardage(self, bounding_box_length, unit="inch"):
+    def _get_real_world_yardage(self, bounding_box_length, unit="inch"):
         """
         returns a final yardage measurement of the new pattern layout after nesting algorithms
         bounding_box_length: a pixel number
         """
-        return bounding_box_length * get_scaling_factor(unit)
+        return bounding_box_length * self._get_scaling_factor(unit)
+
+    def _get_bounding_box_length_width(self, polygonArray):
+        """
+        returns tuple of max x,y coordinate in all polygon bounding boxes
+        polygonArray: a list of Polygon types containing bbox_low_x/y and width/height
+        """
+        current_width = 0
+        current_length = 0
+
+        for polygon in polygonArray:
+            current_length = max(current_length,polygon.bbox_low_y + polygon.height > current_length)
+            current_width = max(current_width,polygon.bbox_low_x + polygon.width > current_width)
+        return current_width, current_length
+

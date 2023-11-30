@@ -7,6 +7,7 @@ from werkzeug.utils import secure_filename
 from api.extraction import convert_pdf_to_jpg, extract_from_image
 from api.parse_svg_input_constaints import parse_svg, translate_polygons_to_SVG
 from api.polygon import Polygon
+from api.resolution import Resolution
 from api.rectangle_nesting import rectangle_packing
 from PyPDF2 import PdfFileReader
 
@@ -37,6 +38,8 @@ class Pdf(Resource):
 
         # Create the 'pdf' folder if it does not exist
         os.makedirs(path, exist_ok=True)
+
+        # TODO: update request to ask for fabric width
 
         # Process the uploaded file
         file = request.files["file"]
@@ -120,10 +123,14 @@ class Poll(Resource):
                 )
             )
 
-        # TODO: change x to be the width of the fabric
+        # TODO: read user input for fabric constraints to update max_x
         container_max_x = 10000
         container_max_y = 40000
         rectangle_packing(polygonArray, container_max_x, container_max_y)
+
+        # TODO: read resolution.svg to get width, height of input.
+        # resolution = Resolution(width, height, path)
+        # resolution.get_final_yardage(polygonArray)
 
         translate_polygons_to_SVG(
             polygonArray,
@@ -131,6 +138,8 @@ class Poll(Resource):
             2000,
             f"api/svg/pattern_page_{id}.svg",
         )
+
+        # TODO: add final yardage info to ouput
         return send_from_directory(
             "./svg/", f"pattern_page_{id}.svg", as_attachment=True
         )
