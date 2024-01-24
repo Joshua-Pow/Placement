@@ -16,7 +16,7 @@ const nextConfig = {
     esmExternals: 'loose', // required to make Konva & react-konva work
   },
   webpack: (config) => {
-    config.externals = [...config.externals, { canvas: 'canvas' }]; // required to make Konva & react-konva work
+    config.externals = [...config.externals, 'canvas', 'jsdom'];
     return config;
   },
 };
