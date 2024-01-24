@@ -1,6 +1,6 @@
 import React from 'react';
 
-type Props = { request: string };
+type Props = { request: 'ACTIVE' | 'INACTIVE' | '' };
 
 const Status = (props: Props) => {
   {

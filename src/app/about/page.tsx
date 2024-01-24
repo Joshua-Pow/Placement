@@ -202,17 +202,43 @@ export default function About() {
             </div>
           </Card>
           <Card className="p-2">
-            <Image
-              alt="Administrator"
-              className="mx-auto mb-4"
-              src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWNpcmNsZS11c2VyLXJvdW5kIj48cGF0aCBkPSJNMTggMjBhNiA2IDAgMCAwLTEyIDAiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjEwIiByPSI0Ii8+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiLz48L3N2Zz4=" //TODO: replace with Inci actual image
-              style={{
-                aspectRatio: '100/100',
-                objectFit: 'cover',
-              }}
-              height={150}
+            <svg //TODO: Replace with actual image of inci
+              xmlns="http://www.w3.org/2000/svg"
+              className="mx-auto mb-4 rounded-full"
               width={150}
-            />
+              height={150}
+              viewBox="0 0 256 256"
+            >
+              <rect width="256" height="256" fill="none" />
+              <circle
+                cx="128"
+                cy="128"
+                r="96"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="16"
+              />
+              <circle
+                cx="128"
+                cy="120"
+                r="40"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="16"
+              />
+              <path
+                d="M63.8,199.37a72,72,0,0,1,128.4,0"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="16"
+              />
+            </svg>
             <div className="space-y-2">
               <h3 className="text-lg font-bold">Inci McGreal</h3>
               <Badge>Administrator</Badge>

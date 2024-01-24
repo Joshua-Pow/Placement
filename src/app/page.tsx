@@ -5,14 +5,32 @@ import Status from '@/components/Status';
 import { Container, Flex, Text } from '@radix-ui/themes';
 import React, { useEffect, useState } from 'react';
 
-export default function Home() {
-  const [backendRequest, setBackendRequest] = useState('');
+type Status = 'ACTIVE' | 'INACTIVE' | '';
 
-  //Make a request to the api at the /pdf endpoint
+export default function Home() {
+  const [backendStatus, setBackendStatus] = useState<Status>('');
+
+  // Keep polling the backend with an increasing interval until data.message is ACTIVE
   useEffect(() => {
-    fetch('/api/pdf')
-      .then((res) => res.json())
-      .then((data) => setBackendRequest(data.message));
+    let intervalTime = 1000; // Start with 1 second
+    const pollBackend = () => {
+      fetch('/api/pdf')
+        .then((res) => {
+          if (res.ok) {
+            setBackendStatus('ACTIVE');
+          } else {
+            // Double the interval time if not ACTIVE
+            intervalTime *= 2;
+            setTimeout(pollBackend, intervalTime);
+          }
+        })
+        .catch((error) => {
+          setBackendStatus('INACTIVE');
+          console.error('Error polling backend:', error);
+        });
+    };
+    setTimeout(pollBackend, intervalTime);
+    // No cleanup function needed as we clear the timeout after 'ACTIVE' is received
   }, []);
 
   return (
@@ -25,7 +43,7 @@ export default function Home() {
           <Text className="pb-2" color="gray">
             Upload your PDF to generate a layout.
           </Text>
-          <Status request={backendRequest ? 'ACTIVE' : ''} />
+          <Status request={backendStatus} />
           <FileUpload />
         </Flex>
       </Container>

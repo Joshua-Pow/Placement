@@ -3,7 +3,7 @@ import { nextui } from '@nextui-org/react';
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   mode: 'jit',
-  darkMode: ['class'],
+  darkMode: 'class',
   content: [
     './pages/**/*.{ts,tsx}',
     './components/**/*.{ts,tsx}',
