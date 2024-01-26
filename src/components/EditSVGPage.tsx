@@ -11,7 +11,7 @@ type Props = {
   shapeUpload: (svg: string) => void;
 };
 
-type Paths = {
+export type Paths = {
   svgString: string | SVGElement;
   quantity: number;
   canRotate: boolean;
@@ -32,7 +32,33 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_resetCount, setResetCount] = useState<number>(0);
-  let myMap = new Map<string, Paths>();
+  const [curId, setCurId] = useState<string>('');
+  const [shapeMap, setShapeMap] = useState<Map<string, Paths>>(new Map());
+
+  //setShapeMap((prev) => new Map(prev.set(curId, dummy)));
+
+  // const onSaveClicked = () => {
+  //   const finalSVG = paper.project.exportSVG({ asString: true });
+  //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  //   paper.project.importSVG(finalSVG as string, (svgItem: any) => {
+  //     svgItem.children.forEach((child: paper.Path | paper.Shape) => {
+  //       console.log('child', child);
+  //       const curPathString = child.exportSVG({ asString: true }) as string;
+  //       const index = curPathString.indexOf('id="');
+  //       const id = curPathString.substring(index + 4, index + 5);
+
+  //       const curPath = {
+  //         ...(shapeMap.get(id) as Paths),
+  //         svgString: child.exportSVG({ asString: true }),
+  //       };
+
+  //       //console.log('curPath', curPath);
+
+  //       setShapeMap(shapeMap.set(id, curPath));
+  //     });
+  //   });
+  //   shapeUpload(paper.project.exportSVG({ asString: true }) as string);
+  // };
 
   useEffect(() => {
     paper.setup(canvasRef.current as HTMLCanvasElement);
@@ -64,7 +90,7 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
             placeOnFold: false,
           };
 
-          myMap.set(id, curPath);
+          setShapeMap(shapeMap.set(id, curPath));
 
           child.onMouseEnter = (event: paper.MouseEvent) => {
             //console.log('mouseEnter', event);
@@ -75,7 +101,9 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
             event.target.selected = false;
           };
           child.onMouseUp = () => {
+            setCurId(id);
             console.log('mouseDown', id);
+            console.log('shapeMap', shapeMap);
           };
 
           // Go through all points
@@ -149,7 +177,7 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
       // Cleanup
       paper.project.clear();
     };
-  }, [sanitizedSvg, _resetCount, myMap]);
+  }, [sanitizedSvg]);
 
   const onClearClicked = useCallback(() => {
     setResetCount((reset) => reset + 1);
@@ -182,13 +210,15 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
           >
             Reset
           </Button>
-          <ShapePopover />
+          <ShapePopover
+            shapeDetails={shapeMap.get(curId) as Paths}
+            setShapeMap={setShapeMap}
+            id={curId}
+          />
           <Button
             onClick={() => {
-              console.log('svg', paper.project.exportSVG({ asString: true }));
-              shapeUpload(
-                paper.project.exportSVG({ asString: true }) as string,
-              );
+              const finalSVG = paper.project.exportSVG({ asString: true });
+              shapeUpload(finalSVG as string);
             }}
           >
             Save
