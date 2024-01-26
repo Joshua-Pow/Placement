@@ -2,6 +2,15 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import paper from 'paper';
 import { Button } from '@/components/ui/button';
 import DOMPurify from 'dompurify';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from './ui/card';
+import { LucideZoomIn, ZoomInIcon, ZoomOutIcon } from 'lucide-react';
 
 type Props = {
   svgString: string;
@@ -23,6 +32,43 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_resetCount, setResetCount] = useState<number>(0);
+  const [zoomLevel, setZoomLevel] = useState<number>(1);
+  const [bgPosition, setBgPosition] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
+
+  const onWheel = useCallback((event: React.WheelEvent<HTMLCanvasElement>) => {
+    console.log('event', event);
+    // Prevent scrolling on the page
+    event.preventDefault();
+
+    const ZOOM_FACTOR = 1.1;
+
+    // Store previous view state.
+    const oldZoom = paper.view.zoom;
+    const oldCenter = paper.view.center;
+
+    // Get mouse position.
+    // It needs to be converted into project coordinates system.
+    const mousePosition = paper.view.viewToProject(
+      new paper.Point(event.nativeEvent.offsetX, event.nativeEvent.offsetY),
+    );
+
+    // Update view zoom.
+    const newZoom =
+      event.deltaY < 0 ? oldZoom * ZOOM_FACTOR : oldZoom / ZOOM_FACTOR;
+    paper.view.zoom = newZoom;
+    setZoomLevel(newZoom); // Update zoom level state
+
+    // Update view position.
+    // Correct the arithmetic operation to work with Point objects
+    const newCenter = oldCenter.add(
+      mousePosition.subtract(oldCenter).multiply(1 - oldZoom / newZoom),
+    );
+    paper.view.center = newCenter;
+    setBgPosition({ x: newCenter.x, y: newCenter.y }); // Update background position state
+  }, []);
 
   useEffect(() => {
     paper.setup(canvasRef.current as HTMLCanvasElement);
@@ -129,22 +175,48 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
   }, [setResetCount]);
 
   return (
-    <div>
-      <canvas
-        style={{
-          width: '100%',
-          height: '500px',
-          backgroundRepeat: 'no-repeat', // Prevents the background image from repeating
-          backgroundPosition: 'center', // Centers the background image
-          backgroundSize: 'contain', // Adjust this as needed ('cover' or 'contain')
-          backgroundImage: `url('data:image/svg+xml;utf8,${encodeURIComponent(
-            svgString,
-          )}')`,
-        }}
-        ref={canvasRef}
-        id="myCanvas"
-      ></canvas>
-      <div className="flex justify-between">
+    <Card>
+      <CardHeader>
+        <CardTitle>Shape Editor</CardTitle>
+        <CardDescription>
+          Move, Resize and adjust the shapes so they overlap the outlines in the
+          background
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Card className="relative">
+          <div className="absolute z-50 top-2 right-2 flex gap-2">
+            <Button
+              className="group active:bg-gray-300 dark:active:bg-gray-700"
+              variant="outline"
+            >
+              <ZoomInIcon className="h-4 w-4 transform transition-transform group-hover:scale-110" />
+            </Button>
+            <Button
+              className="group active:bg-gray-300 dark:active:bg-gray-700"
+              variant="outline"
+            >
+              <ZoomOutIcon className="h-4 w-4 transform transition-transform group-hover:scale-90" />
+            </Button>
+          </div>
+          <canvas
+            style={{
+              width: '100%',
+              height: '500px',
+              backgroundRepeat: 'no-repeat', // Prevents the background image from repeating
+              backgroundPosition: `${bgPosition.x}px ${bgPosition.y}px`,
+              backgroundSize: `${zoomLevel * 100}%`,
+              backgroundImage: `url('data:image/svg+xml;utf8,${encodeURIComponent(
+                svgString,
+              )}')`,
+            }}
+            ref={canvasRef}
+            id="myCanvas"
+            onWheel={onWheel}
+          ></canvas>
+        </Card>
+      </CardContent>
+      <CardFooter className="flex justify-between">
         <Button
           variant="secondary"
           style={{ marginRight: 5 }}
@@ -159,8 +231,8 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
         >
           Save
         </Button>
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   );
 };
 
