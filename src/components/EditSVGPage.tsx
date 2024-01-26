@@ -1,12 +1,21 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import paper from 'paper';
 import { Button } from '@/components/ui/button';
+import { ShapePopover } from './ShapePopover';
 import DOMPurify from 'dompurify';
+import { Popover, PopoverTrigger } from './ui/popover';
 
 type Props = {
   svgString: string;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
   shapeUpload: (svg: string) => void;
+};
+
+type Paths = {
+  svgString: string | SVGElement;
+  quantity: number;
+  canRotate: boolean;
+  placeOnFold: boolean;
 };
 
 const hitOptions = {
@@ -23,6 +32,7 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_resetCount, setResetCount] = useState<number>(0);
+  let myMap = new Map<string, Paths>();
 
   useEffect(() => {
     paper.setup(canvasRef.current as HTMLCanvasElement);
@@ -42,13 +52,30 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
           child.strokeColor = new paper.Color('#9a6be580');
           child.fillColor = new paper.Color('#c8adf180');
 
+          const curPathString = child.exportSVG({ asString: true }) as string;
+          const index = curPathString.indexOf('id="');
+          const id = curPathString.substring(index + 4, index + 5);
+          console.log('id', id);
+
+          const curPath = {
+            svgString: child.exportSVG({ asString: true }),
+            quantity: 1,
+            canRotate: false,
+            placeOnFold: false,
+          };
+
+          myMap.set(id, curPath);
+
           child.onMouseEnter = (event: paper.MouseEvent) => {
-            console.log('mouseEnter', event);
+            //console.log('mouseEnter', event);
             event.target.selected = true;
           };
           child.onMouseLeave = (event: paper.MouseEvent) => {
-            console.log('mouseLeave', event);
+            //console.log('mouseLeave', event);
             event.target.selected = false;
+          };
+          child.onMouseUp = () => {
+            console.log('mouseDown', id);
           };
 
           // Go through all points
@@ -82,7 +109,7 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
     });
 
     paper.view.onMouseDown = (event: paper.ToolEvent) => {
-      console.log('mouseDown', event);
+      //console.log('mouseDown', event);
       segment = path = null;
       const hitResult = paper.project.hitTest(event.point, hitOptions);
       if (!hitResult) return;
@@ -122,45 +149,53 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
       // Cleanup
       paper.project.clear();
     };
-  }, [sanitizedSvg, _resetCount]);
+  }, [sanitizedSvg, _resetCount, myMap]);
 
   const onClearClicked = useCallback(() => {
     setResetCount((reset) => reset + 1);
   }, [setResetCount]);
 
   return (
-    <div>
-      <canvas
-        style={{
-          width: '100%',
-          height: '500px',
-          backgroundRepeat: 'no-repeat', // Prevents the background image from repeating
-          backgroundPosition: 'center', // Centers the background image
-          backgroundSize: 'contain', // Adjust this as needed ('cover' or 'contain')
-          backgroundImage: `url('data:image/svg+xml;utf8,${encodeURIComponent(
-            svgString,
-          )}')`,
-        }}
-        ref={canvasRef}
-        id="myCanvas"
-      ></canvas>
-      <div className="flex justify-between">
-        <Button
-          variant="secondary"
-          style={{ marginRight: 5 }}
-          onClick={onClearClicked}
-        >
-          Reset
-        </Button>
-        <Button
-          onClick={() =>
-            shapeUpload(paper.project.exportSVG({ asString: true }) as string)
-          }
-        >
-          Save
-        </Button>
+    <Popover>
+      <div>
+        <PopoverTrigger asChild>
+          <canvas
+            style={{
+              width: '100%',
+              height: '500px',
+              backgroundRepeat: 'no-repeat', // Prevents the background image from repeating
+              backgroundPosition: 'center', // Centers the background image
+              backgroundSize: 'contain', // Adjust this as needed ('cover' or 'contain')
+              backgroundImage: `url('data:image/svg+xml;utf8,${encodeURIComponent(
+                svgString,
+              )}')`,
+            }}
+            ref={canvasRef}
+            id="myCanvas"
+          ></canvas>
+        </PopoverTrigger>
+        <div className="flex justify-between">
+          <Button
+            variant="secondary"
+            style={{ marginRight: 5 }}
+            onClick={onClearClicked}
+          >
+            Reset
+          </Button>
+          <ShapePopover />
+          <Button
+            onClick={() => {
+              console.log('svg', paper.project.exportSVG({ asString: true }));
+              shapeUpload(
+                paper.project.exportSVG({ asString: true }) as string,
+              );
+            }}
+          >
+            Save
+          </Button>
+        </div>
       </div>
-    </div>
+    </Popover>
   );
 };
 

@@ -93,8 +93,13 @@ def extract_from_image(filename_paths):
 
         for i in range(len(all_contours)):
             contours = all_contours[i]
+            id_counter = 0
             for c in contours:
-                f.write('<path d="M')
+                path_id = chr(97 + id_counter)  # 97 is the ASCII value for 'a'
+                f.write(
+                    f'<path id="{path_id}" d="M'
+                )  # TODO: create unique letter id for each path, note: cant use numbers for id
+                id_counter += 1
                 for j in range(len(c)):
                     x, y = c[j][0]
                     if i != 0:
