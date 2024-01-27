@@ -93,3 +93,36 @@ class Polygon(object):
                 coord[1] = centre_y - (coord[1] - centre_y)
             else:
                 coord[1] = centre_y + (centre_y - coord[1])
+
+    def centre_fold_manip(self, fold_line):
+        """
+        Manipulate the centre fold piece by flip the polygon shape, and adjust the bounding box accordingly.
+        fold_line: "top" (higher y-coord) or "bottom" (lower y-coord)
+        """
+
+        if fold_line != "top" and fold_line != "bottom":
+            print("Wrong input for fold_line!")
+            return
+
+        num_orig_contour_points = len(self.contour)
+
+        # TODO: find the first point that the fold line starts, reorder points
+
+        for i in reversed(range(num_orig_contour_points)):
+            coord = self.contour[i]
+            if fold_line == "top":
+                fold_line_axis = self.y + self.height
+                new_y_coord = fold_line_axis - coord[1] + fold_line_axis
+                self.contour.append([coord[0], new_y_coord])
+
+            elif fold_line == "bottom":
+                fold_line_axis = self.y
+                new_y_coord = fold_line_axis - (coord[1] - fold_line_axis)
+                self.contour.append([coord[0], new_y_coord])
+
+        self.height = self.height * 2
+        self.bbox_h += self.height
+
+        if fold_line == "bottom":
+            self.y -= self.height
+            self.bbox_low_y -= self.height
