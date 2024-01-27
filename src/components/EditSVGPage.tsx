@@ -8,7 +8,15 @@ import { Popover, PopoverTrigger } from './ui/popover';
 type Props = {
   svgString: string;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  shapeUpload: (svg: string) => void;
+  shapeUpload: (svg: Shape[]) => void;
+};
+
+export type Shape = {
+  id: string;
+  svgString: string | SVGElement;
+  quantity: number;
+  canRotate: boolean;
+  placeOnFold: boolean;
 };
 
 export type Paths = {
@@ -35,30 +43,38 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
   const [curId, setCurId] = useState<string>('');
   const [shapeMap, setShapeMap] = useState<Map<string, Paths>>(new Map());
 
-  //setShapeMap((prev) => new Map(prev.set(curId, dummy)));
+  const onSaveClicked = useCallback(() => {
+    const shapeArray: Shape[] = [];
+    const finalSVG = paper.project.exportSVG({ asString: true });
+    const parser = new DOMParser();
+    const svgDoc = parser.parseFromString(finalSVG as string, 'image/svg+xml');
+    const paths = svgDoc.querySelectorAll('path');
+    const serializer = new XMLSerializer();
+    for (let i = 0; i < paths.length; i++) {
+      const pathString = serializer.serializeToString(paths[i]);
+      const index = pathString.indexOf('id="');
+      const id = pathString.substring(index + 4, index + 5);
 
-  // const onSaveClicked = () => {
-  //   const finalSVG = paper.project.exportSVG({ asString: true });
-  //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  //   paper.project.importSVG(finalSVG as string, (svgItem: any) => {
-  //     svgItem.children.forEach((child: paper.Path | paper.Shape) => {
-  //       console.log('child', child);
-  //       const curPathString = child.exportSVG({ asString: true }) as string;
-  //       const index = curPathString.indexOf('id="');
-  //       const id = curPathString.substring(index + 4, index + 5);
+      const curShapeDetail = {
+        ...(shapeMap.get(id) as Paths),
+        svgString: pathString,
+      };
 
-  //       const curPath = {
-  //         ...(shapeMap.get(id) as Paths),
-  //         svgString: child.exportSVG({ asString: true }),
-  //       };
+      const shape = {
+        id: id,
+        svgString: pathString,
+        quantity: curShapeDetail.quantity,
+        canRotate: curShapeDetail.canRotate,
+        placeOnFold: curShapeDetail.placeOnFold,
+      };
 
-  //       //console.log('curPath', curPath);
-
-  //       setShapeMap(shapeMap.set(id, curPath));
-  //     });
-  //   });
-  //   shapeUpload(paper.project.exportSVG({ asString: true }) as string);
-  // };
+      const tempMap = shapeMap.set(id, curShapeDetail);
+      setShapeMap(tempMap);
+      shapeArray.push(shape);
+    }
+    console.log('final array', shapeArray);
+    shapeUpload(shapeArray);
+  }, [shapeUpload, shapeMap]);
 
   useEffect(() => {
     paper.setup(canvasRef.current as HTMLCanvasElement);
@@ -69,8 +85,6 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
     paper.project.importSVG(sanitizedSvg, (svgItem: any) => {
       svgItem.fitBounds(paper.view.bounds);
       svgItem.position = paper.view.center;
-
-      console.log(svgItem.children);
 
       svgItem.children.forEach((child: paper.Path | paper.Shape) => {
         if (child instanceof paper.Path) {
@@ -90,7 +104,9 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
             placeOnFold: false,
           };
 
-          setShapeMap(shapeMap.set(id, curPath));
+          if (shapeMap.size !== svgItem.children.length - 1) {
+            setShapeMap(shapeMap.set(id, curPath));
+          }
 
           child.onMouseEnter = (event: paper.MouseEvent) => {
             //console.log('mouseEnter', event);
@@ -177,7 +193,7 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
       // Cleanup
       paper.project.clear();
     };
-  }, [sanitizedSvg]);
+  }, [sanitizedSvg, shapeMap]);
 
   const onClearClicked = useCallback(() => {
     setResetCount((reset) => reset + 1);
@@ -215,14 +231,7 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
             setShapeMap={setShapeMap}
             id={curId}
           />
-          <Button
-            onClick={() => {
-              const finalSVG = paper.project.exportSVG({ asString: true });
-              shapeUpload(finalSVG as string);
-            }}
-          >
-            Save
-          </Button>
+          <Button onClick={onSaveClicked}>Save</Button>
         </div>
       </div>
     </Popover>
