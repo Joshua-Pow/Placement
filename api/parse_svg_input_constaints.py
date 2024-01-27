@@ -2,6 +2,7 @@ from svg.path import parse_path
 from svg.path.path import Line
 from xml.dom import minidom
 from api.polygon import Polygon
+import copy
 
 
 def parse_svg(svgString: str):
@@ -91,11 +92,38 @@ def translate_polygons_to_SVG(polygons, viewbox_width, viewbox_height, new_filen
         f.write("</svg>")
 
 
+def duplicate_polygon(polygons, pid, quantity):
+    """
+    Duplicate a particular polygon shape in the polygond data structure to a certain quantity.
+    The caller of this function should ideally already checked the pid to be valid, and quantity is a finite integer>2
+    """
+
+    if pid < 0 or pid >= len(polygons):
+        print("invalid pid for piece duplication!")
+        return
+
+    p = polygons[pid]
+    print("polygon to be duplicated: x:{},y:{}", p.x, p.y)
+
+    for i in range(quantity - 1):
+        new = Polygon(
+            copy.deepcopy(p.contour),
+            p.x,
+            p.y,
+            p.width,
+            p.height,
+            bonding_box_margin=p.bonding_box_margin,
+            pid=len(polygons),
+        )
+        polygons.append(new)
+
+
 ## Usage ##
-# polygons = parse_svg('simple_shapes.svg')
+# polygons = parse_svg("./api/simple_shapes.svg")
+# duplicate_polygon(polygons, 1, 2)  # duplicate the pid=1 shape to have 2 of it
 
 # container_max_x = 10000
 # container_max_y = 4000
 # rectangle_packing(polygons, container_max_x, container_max_y)
 
-# translate_polygons_to_SVG(polygons, 2000, 2000, "new_placement.svg")
+# translate_polygons_to_SVG(polygons, 2000, 2000, "./api/new_placement_dup.svg")
