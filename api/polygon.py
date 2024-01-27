@@ -70,3 +70,15 @@ class Polygon(object):
 
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__)
+
+    def mirror_around_centre_y_axis(self):
+        """
+        Mirror a polygon shape around the centre horizontal y-axis.
+        """
+        centre_y = self.bbox_low_y + self.bbox_h / 2
+
+        for coord in self.contour:
+            if coord[1] > centre_y:
+                coord[1] = centre_y - (coord[1] - centre_y)
+            else:
+                coord[1] = centre_y + (centre_y - coord[1])

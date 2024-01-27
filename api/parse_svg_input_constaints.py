@@ -95,7 +95,8 @@ def translate_polygons_to_SVG(polygons, viewbox_width, viewbox_height, new_filen
 def duplicate_polygon(polygons, pid, quantity):
     """
     Duplicate a particular polygon shape in the polygond data structure to a certain quantity.
-    The caller of this function should ideally already checked the pid to be valid, and quantity is a finite integer>2
+    The caller of this function should ideally already checked the pid to be valid, and quantity is a finite integer>2.
+    When a piece is duplicated, if user wants a even quantity, then half of the pieces are mirrored (ie. left and right pant)
     """
 
     if pid < 0 or pid >= len(polygons):
@@ -103,7 +104,7 @@ def duplicate_polygon(polygons, pid, quantity):
         return
 
     p = polygons[pid]
-    print("polygon to be duplicated: x:{},y:{}", p.x, p.y)
+    mirror = quantity % 2 == 0  # even quantity
 
     for i in range(quantity - 1):
         new = Polygon(
@@ -115,15 +116,19 @@ def duplicate_polygon(polygons, pid, quantity):
             bonding_box_margin=p.bonding_box_margin,
             pid=len(polygons),
         )
+
+        if mirror and (i % 2 == 0):
+            new.mirror_around_centre_y_axis()
+
         polygons.append(new)
 
 
 ## Usage ##
 # polygons = parse_svg("./api/simple_shapes.svg")
-# duplicate_polygon(polygons, 1, 2)  # duplicate the pid=1 shape to have 2 of it
+# duplicate_polygon(polygons, 1, 4)  # duplicate the pid=1 shape to have 2 of it
 
 # container_max_x = 10000
 # container_max_y = 4000
 # rectangle_packing(polygons, container_max_x, container_max_y)
 
-# translate_polygons_to_SVG(polygons, 2000, 2000, "./api/new_placement_dup.svg")
+# translate_polygons_to_SVG(polygons, 2000, 6000, "./api/new_placement_dup.svg")
