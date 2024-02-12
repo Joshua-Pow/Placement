@@ -7,6 +7,7 @@ import { useToast } from '@/components/ui/use-toast';
 import axios from 'axios';
 import dynamic from 'next/dynamic';
 import IterationVisualizer from './IterationVisualizer';
+import { Shape } from './EditSVGPage';
 const EditSVGPage = dynamic(() => import('./EditSVGPage'), { ssr: false });
 
 const FileUpload = () => {
@@ -73,8 +74,9 @@ const FileUpload = () => {
   }, [pdf, toast]);
 
   const postSVG = useCallback(
-    (svg: string) => {
+    (svg: Shape[]) => {
       //PUT to the /api/pdf/ route
+      console.log('svg', svg);
       axios
         .put('/api/pdf/', {
           svg: svg,
@@ -96,7 +98,7 @@ const FileUpload = () => {
   );
 
   const shapeUpload = useCallback(
-    (svg: string) => {
+    (svg: Shape[]) => {
       setLoading(true);
       setSubmitted(false);
       // const svg = paper.project.exportSVG({ asString: true }) as string;

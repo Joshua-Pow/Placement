@@ -1,12 +1,29 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import paper from 'paper';
 import { Button } from '@/components/ui/button';
+import { ShapePopover } from './ShapePopover';
 import DOMPurify from 'dompurify';
+import { Popover, PopoverTrigger } from './ui/popover';
 
 type Props = {
   svgString: string;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  shapeUpload: (svg: string) => void;
+  shapeUpload: (svg: Shape[]) => void;
+};
+
+export type Shape = {
+  id: string;
+  svgString: string | SVGElement;
+  quantity: number;
+  canRotate: boolean;
+  placeOnFold: boolean;
+};
+
+export type Paths = {
+  svgString: string | SVGElement;
+  quantity: number;
+  canRotate: boolean;
+  placeOnFold: boolean;
 };
 
 const hitOptions = {
@@ -23,6 +40,41 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_resetCount, setResetCount] = useState<number>(0);
+  const [curId, setCurId] = useState<string>('');
+  const [shapeMap, setShapeMap] = useState<Map<string, Paths>>(new Map());
+
+  const onSaveClicked = useCallback(() => {
+    const shapeArray: Shape[] = [];
+    const finalSVG = paper.project.exportSVG({ asString: true });
+    const parser = new DOMParser();
+    const svgDoc = parser.parseFromString(finalSVG as string, 'image/svg+xml');
+    const paths = svgDoc.querySelectorAll('path');
+    const serializer = new XMLSerializer();
+    for (let i = 0; i < paths.length; i++) {
+      const pathString = serializer.serializeToString(paths[i]);
+      const index = pathString.indexOf('id="');
+      const id = pathString.substring(index + 4, index + 5);
+
+      const curShapeDetail = {
+        ...(shapeMap.get(id) as Paths),
+        svgString: pathString,
+      };
+
+      const shape = {
+        id: id,
+        svgString: pathString,
+        quantity: curShapeDetail.quantity,
+        canRotate: curShapeDetail.canRotate,
+        placeOnFold: curShapeDetail.placeOnFold,
+      };
+
+      const tempMap = shapeMap.set(id, curShapeDetail);
+      setShapeMap(tempMap);
+      shapeArray.push(shape);
+    }
+    console.log('final array', shapeArray);
+    shapeUpload(shapeArray);
+  }, [shapeUpload, shapeMap]);
 
   useEffect(() => {
     paper.setup(canvasRef.current as HTMLCanvasElement);
@@ -34,21 +86,40 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
       svgItem.fitBounds(paper.view.bounds);
       svgItem.position = paper.view.center;
 
-      console.log(svgItem.children);
-
       svgItem.children.forEach((child: paper.Path | paper.Shape) => {
         if (child instanceof paper.Path) {
           child.strokeWidth = 2;
           child.strokeColor = new paper.Color('#9a6be580');
           child.fillColor = new paper.Color('#c8adf180');
 
+          const curPathString = child.exportSVG({ asString: true }) as string;
+          const index = curPathString.indexOf('id="');
+          const id = curPathString.substring(index + 4, index + 5);
+          console.log('id', id);
+
+          const curPath = {
+            svgString: child.exportSVG({ asString: true }),
+            quantity: 1,
+            canRotate: false,
+            placeOnFold: false,
+          };
+
+          if (shapeMap.size !== svgItem.children.length - 1) {
+            setShapeMap(shapeMap.set(id, curPath));
+          }
+
           child.onMouseEnter = (event: paper.MouseEvent) => {
-            console.log('mouseEnter', event);
+            //console.log('mouseEnter', event);
             event.target.selected = true;
           };
           child.onMouseLeave = (event: paper.MouseEvent) => {
-            console.log('mouseLeave', event);
+            //console.log('mouseLeave', event);
             event.target.selected = false;
+          };
+          child.onMouseUp = () => {
+            setCurId(id);
+            console.log('mouseDown', id);
+            console.log('shapeMap', shapeMap);
           };
 
           // Go through all points
@@ -82,7 +153,7 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
     });
 
     paper.view.onMouseDown = (event: paper.ToolEvent) => {
-      console.log('mouseDown', event);
+      //console.log('mouseDown', event);
       segment = path = null;
       const hitResult = paper.project.hitTest(event.point, hitOptions);
       if (!hitResult) return;
@@ -122,45 +193,48 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
       // Cleanup
       paper.project.clear();
     };
-  }, [sanitizedSvg, _resetCount]);
+  }, [sanitizedSvg, shapeMap]);
 
   const onClearClicked = useCallback(() => {
     setResetCount((reset) => reset + 1);
   }, [setResetCount]);
 
   return (
-    <div>
-      <canvas
-        style={{
-          width: '100%',
-          height: '500px',
-          backgroundRepeat: 'no-repeat', // Prevents the background image from repeating
-          backgroundPosition: 'center', // Centers the background image
-          backgroundSize: 'contain', // Adjust this as needed ('cover' or 'contain')
-          backgroundImage: `url('data:image/svg+xml;utf8,${encodeURIComponent(
-            svgString,
-          )}')`,
-        }}
-        ref={canvasRef}
-        id="myCanvas"
-      ></canvas>
-      <div className="flex justify-between">
-        <Button
-          variant="secondary"
-          style={{ marginRight: 5 }}
-          onClick={onClearClicked}
-        >
-          Reset
-        </Button>
-        <Button
-          onClick={() =>
-            shapeUpload(paper.project.exportSVG({ asString: true }) as string)
-          }
-        >
-          Save
-        </Button>
+    <Popover>
+      <div>
+        <PopoverTrigger asChild>
+          <canvas
+            style={{
+              width: '100%',
+              height: '500px',
+              backgroundRepeat: 'no-repeat', // Prevents the background image from repeating
+              backgroundPosition: 'center', // Centers the background image
+              backgroundSize: 'contain', // Adjust this as needed ('cover' or 'contain')
+              backgroundImage: `url('data:image/svg+xml;utf8,${encodeURIComponent(
+                svgString,
+              )}')`,
+            }}
+            ref={canvasRef}
+            id="myCanvas"
+          ></canvas>
+        </PopoverTrigger>
+        <div className="flex justify-between">
+          <Button
+            variant="secondary"
+            style={{ marginRight: 5 }}
+            onClick={onClearClicked}
+          >
+            Reset
+          </Button>
+          <ShapePopover
+            shapeDetails={shapeMap.get(curId) as Paths}
+            setShapeMap={setShapeMap}
+            id={curId}
+          />
+          <Button onClick={onSaveClicked}>Save</Button>
+        </div>
       </div>
-    </div>
+    </Popover>
   );
 };
 
