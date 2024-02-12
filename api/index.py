@@ -5,7 +5,11 @@ import os
 import json
 from werkzeug.utils import secure_filename
 from api.extraction import convert_pdf_to_png, extract_from_image
-from api.parse_svg_input_constaints import parse_svg, translate_polygons_to_SVG
+from api.parse_svg_input_constaints import (
+    parse_svg,
+    translate_polygons_to_SVG,
+    duplicate_polygon,
+)
 from api.polygon import Polygon
 from api.rectangle_nesting import rectangle_packing
 
@@ -54,10 +58,27 @@ class Pdf(Resource):
             print("Error processing file")
             return {"message": "Error processing file"}
 
-    def put(self):  # Used for sending new user confirmed svg string to run algorithm on
-        # Take the svg string from the request and parse it to polygons
-        svg = request.get_json()["svg"]
-        print(f"svg_string: {svg}")
+    def put(self):
+        """
+        Endpoint Description:
+        - Purpose: Receives a user-confirmed SVG string to run the algorithm on.
+        - Request Format:
+            {
+                "svg": [
+                    {
+                        "id": "1",
+                        "quantity": 1,
+                        "canRotate": false,
+                        "placeOnFold": false,
+                        "svgString": "<path id='a' ... />"
+                    }
+                ]
+            }
+        """
+
+        svgs = request.get_json()["svg"]  # TODO: parse new request format
+        print(f"request: {request.get_json()}")
+        print(f"svg_string: {svgs}")
 
         # Generate an unique id and store the polygons in a /polygons/<id>.json file
         # Check if theres an id of 1, if not, create it
@@ -69,8 +90,13 @@ class Pdf(Resource):
         while os.path.exists(f"api/polygons/{next_id}.json"):
             next_id += 1
 
+        # TODO: rework this workflow to do all duplicate and other property changes in the parse_svg function
         # Save the polygon data
-        polygons = parse_svg(svg)
+        polygons = parse_svg(svgs)  # TODO: Make this parse each individual svg path tag
+        # See if any of the polygons have a quantity > 1
+        for svg in svgs:
+            if svg["quantity"] > 1:
+                duplicate_polygon(polygons, svg["id"], svg["quantity"] - 1)
         # Create a json object to hold all polygons
         json_polygons = {}
         for polygon in polygons:

@@ -13,14 +13,16 @@ def parse_svg(svgString: str):
     """
     # read the SVG file
     doc = minidom.parseString(svgString)
-    path_strings = [path.getAttribute("d") for path in doc.getElementsByTagName("path")]
+    path_data = [
+        (path.getAttribute("d"), path.getAttribute("id").split("-")[1])
+        for path in doc.getElementsByTagName("path")
+    ]
     doc.unlink()
 
     polygons = []
-    num_polygons = 0
     space_margin = 2
     # print the line draw commands
-    for path_string in path_strings:
+    for path_string, id in path_data:
         # using parse_path here since in the future we might have curve lines
         # and this python library would be useful
         path = parse_path(path_string)
@@ -63,10 +65,9 @@ def parse_svg(svgString: str):
             right_x - left_x,
             top_y - bottom_y,
             bonding_box_margin=space_margin,
-            pid=num_polygons,
+            pid=id,
         )
         polygons.append(p)
-        num_polygons += 1
 
     return polygons
 

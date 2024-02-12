@@ -52,8 +52,9 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
     const serializer = new XMLSerializer();
     for (let i = 0; i < paths.length; i++) {
       const pathString = serializer.serializeToString(paths[i]);
-      const index = pathString.indexOf('id="');
-      const id = pathString.substring(index + 4, index + 5);
+      const idMatch = pathString.match(/id="shape-(\d+)"/);
+      if (!idMatch) throw new Error('No matching ID found');
+      const id = idMatch[1];
 
       const curShapeDetail = {
         ...(shapeMap.get(id) as Paths),
@@ -92,10 +93,10 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
           child.strokeColor = new paper.Color('#9a6be580');
           child.fillColor = new paper.Color('#c8adf180');
 
-          const curPathString = child.exportSVG({ asString: true }) as string;
-          const index = curPathString.indexOf('id="');
-          const id = curPathString.substring(index + 4, index + 5);
-          console.log('id', id);
+          const pathString = child.exportSVG({ asString: true }) as string;
+          const idMatch = pathString.match(/id="shape-(\d+)"/);
+          if (!idMatch) throw new Error('No matching ID found');
+          const id = idMatch[1];
 
           const curPath = {
             svgString: child.exportSVG({ asString: true }),
