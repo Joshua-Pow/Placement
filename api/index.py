@@ -66,7 +66,7 @@ class Pdf(Resource):
             {
                 "svg": [
                     {
-                        "id": "1",
+                        "id": 1,
                         "quantity": 1,
                         "canRotate": false,
                         "placeOnFold": false,
@@ -76,9 +76,7 @@ class Pdf(Resource):
             }
         """
 
-        svgs = request.get_json()["svg"]  # TODO: parse new request format
-        print(f"request: {request.get_json()}")
-        print(f"svg_string: {svgs}")
+        svgs = request.get_json()["svg"]
 
         # Generate an unique id and store the polygons in a /polygons/<id>.json file
         # Check if theres an id of 1, if not, create it
@@ -92,11 +90,18 @@ class Pdf(Resource):
 
         # TODO: rework this workflow to do all duplicate and other property changes in the parse_svg function
         # Save the polygon data
-        polygons = parse_svg(svgs)  # TODO: Make this parse each individual svg path tag
-        # See if any of the polygons have a quantity > 1
+        polygons: list[Polygon] = []
+        # Go through each svg and parse it into a Polygon object then add it to the polygons list
+        for svg in svgs:
+            polygons.extend(parse_svg(svg["svgString"]))
+
+        # Need to add duplicates after parsing all the polygons since there duplicates will overlap space where the other shapes will be
+        # TODO: look into preventing duplicates from overlapping
         for svg in svgs:
             if svg["quantity"] > 1:
-                duplicate_polygon(polygons, svg["id"], svg["quantity"] - 1)
+                print(f"Duplicate {svg['quantity']} times")
+                duplicate_polygon(polygons, svg["id"], svg["quantity"], len(svgs))
+
         # Create a json object to hold all polygons
         json_polygons = {}
         for polygon in polygons:

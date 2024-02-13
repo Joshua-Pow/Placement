@@ -12,7 +12,7 @@ type Props = {
 };
 
 export type Shape = {
-  id: string;
+  id: number;
   svgString: string | SVGElement;
   quantity: number;
   canRotate: boolean;
@@ -62,12 +62,13 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
       };
 
       const shape = {
-        id: id,
+        id: Number(id),
         svgString: pathString,
         quantity: curShapeDetail.quantity,
         canRotate: curShapeDetail.canRotate,
         placeOnFold: curShapeDetail.placeOnFold,
       };
+      console.log('shape', shape);
 
       const tempMap = shapeMap.set(id, curShapeDetail);
       setShapeMap(tempMap);

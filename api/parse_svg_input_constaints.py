@@ -5,7 +5,7 @@ from api.polygon import Polygon
 import copy
 
 
-def parse_svg(svgString: str):
+def parse_svg(svgString: str) -> list[Polygon]:
     """
     Parse a SVG string and return a list of Polygon objects based on the SVG paths.
     Note: we only deal with SVG Line for now.
@@ -19,7 +19,7 @@ def parse_svg(svgString: str):
     ]
     doc.unlink()
 
-    polygons = []
+    polygons: list[Polygon] = []
     space_margin = 2
     # print the line draw commands
     for path_string, id in path_data:
@@ -65,7 +65,7 @@ def parse_svg(svgString: str):
             right_x - left_x,
             top_y - bottom_y,
             bonding_box_margin=space_margin,
-            pid=id,
+            pid=int(id),
         )
         polygons.append(p)
 
@@ -93,7 +93,9 @@ def translate_polygons_to_SVG(polygons, viewbox_width, viewbox_height, new_filen
         f.write("</svg>")
 
 
-def duplicate_polygon(polygons, pid, quantity):
+def duplicate_polygon(
+    polygons: list[Polygon], pid: int, quantity: int, len_polygons: int
+):
     """
     Duplicate a particular polygon shape in the polygond data structure to a certain quantity.
     The caller of this function should ideally already checked the pid to be valid, and quantity is a finite integer>2.
@@ -115,12 +117,11 @@ def duplicate_polygon(polygons, pid, quantity):
             p.width,
             p.height,
             bonding_box_margin=p.bonding_box_margin,
-            pid=len(polygons),
+            pid=len_polygons + i,
         )
 
         if mirror and (i % 2 == 0):
             new.mirror_around_centre_y_axis()
-
         polygons.append(new)
 
 
