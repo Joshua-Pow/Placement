@@ -10,7 +10,8 @@ import {
   CardTitle,
   CardFooter,
 } from './ui/card';
-import { LucideZoomIn, ZoomInIcon, ZoomOutIcon } from 'lucide-react';
+import { Grab, Hand, ZoomInIcon, ZoomOutIcon } from 'lucide-react';
+import { Toggle } from './ui/toggle';
 
 type Props = {
   svgString: string;
@@ -25,6 +26,8 @@ const hitOptions = {
   tolerance: 5,
 };
 
+const zoomFactor = 1.1;
+
 const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
   const sanitizedSvg = DOMPurify.sanitize(svgString, {
     USE_PROFILES: { svg: true },
@@ -32,11 +35,15 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_resetCount, setResetCount] = useState<number>(0);
-  const [zoomLevel, setZoomLevel] = useState<number>(1);
-  const [bgPosition, setBgPosition] = useState<{ x: number; y: number }>({
-    x: 0,
-    y: 0,
-  });
+  const [isPanning, setIsPanning] = useState<boolean>(false);
+
+  const zoomIn = useCallback(() => {
+    paper.view.zoom *= zoomFactor;
+  }, []);
+
+  const zoomOut = useCallback(() => {
+    paper.view.zoom /= zoomFactor;
+  }, []);
 
   const onWheel = useCallback((event: React.WheelEvent<HTMLCanvasElement>) => {
     console.log('event', event);
@@ -59,7 +66,6 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
     const newZoom =
       event.deltaY < 0 ? oldZoom * ZOOM_FACTOR : oldZoom / ZOOM_FACTOR;
     paper.view.zoom = newZoom;
-    setZoomLevel(newZoom); // Update zoom level state
 
     // Update view position.
     // Correct the arithmetic operation to work with Point objects
@@ -68,6 +74,7 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
     );
     paper.view.center = newCenter;
     setBgPosition({ x: newCenter.x, y: newCenter.y }); // Update background position state
+    event.defaultPrevented = true;
   }, []);
 
   useEffect(() => {
@@ -75,12 +82,25 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
     let segment: paper.Segment | null = null;
     let path: paper.Path | null = null;
     let movePath = false;
+
+    //This adds the svg as a background image with a blue border
+    const raster = new paper.Raster({
+      source: `data:image/svg+xml;utf8,${encodeURIComponent(svgString)}`,
+      position: paper.view.center,
+      onLoad: () => {
+        raster.position = paper.view.center;
+        raster.fitBounds(paper.view.bounds);
+        // Create a blue border around the raster
+        const border = new paper.Path.Rectangle(raster.bounds);
+        border.strokeColor = new paper.Color('blue');
+        border.strokeWidth = 2;
+      },
+    });
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     paper.project.importSVG(sanitizedSvg, (svgItem: any) => {
       svgItem.fitBounds(paper.view.bounds);
       svgItem.position = paper.view.center;
-
-      console.log(svgItem.children);
 
       svgItem.children.forEach((child: paper.Path | paper.Shape) => {
         if (child instanceof paper.Path) {
@@ -133,6 +153,7 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
       const hitResult = paper.project.hitTest(event.point, hitOptions);
       if (!hitResult) return;
 
+      //Delete points when shift is pressed
       if (event.modifiers.shift) {
         if (hitResult.type === 'segment') {
           hitResult.segment.remove();
@@ -155,8 +176,10 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
       if (movePath) paper.project.activeLayer.addChild(hitResult.item);
     };
 
-    paper.view.onMouseDrag = (event: paper.ToolEvent) => {
-      if (segment) {
+    const handleMouseDrag = (event: paper.ToolEvent) => {
+      if (event.modifiers.shift) {
+        paper.view.center = paper.view.center.subtract(event.delta);
+      } else if (segment) {
         segment.point = (segment.point as paper.Point).add(event.delta);
         // path?.smooth();
       } else if (path) {
@@ -164,13 +187,16 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
       }
     };
 
+    paper.view.onMouseDrag = handleMouseDrag;
+
     return () => {
       // Cleanup
       paper.project.clear();
     };
-  }, [sanitizedSvg, _resetCount]);
+  }, [sanitizedSvg, _resetCount, svgString]);
 
   const onClearClicked = useCallback(() => {
+    console.log(paper.project.layers);
     setResetCount((reset) => reset + 1);
   }, [setResetCount]);
 
@@ -186,33 +212,38 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
       <CardContent>
         <Card className="relative">
           <div className="absolute z-50 top-2 right-2 flex gap-2">
+            <Toggle
+              className="group active:bg-gray-300 dark:active:bg-gray-700"
+              variant="outline"
+              pressed={isPanning}
+              onClick={() => setIsPanning(!isPanning)}
+            >
+              {isPanning ? <Grab /> : <Hand />}
+            </Toggle>
             <Button
               className="group active:bg-gray-300 dark:active:bg-gray-700"
               variant="outline"
+              onClick={zoomIn}
             >
               <ZoomInIcon className="h-4 w-4 transform transition-transform group-hover:scale-110" />
             </Button>
             <Button
               className="group active:bg-gray-300 dark:active:bg-gray-700"
               variant="outline"
+              onClick={zoomOut}
             >
               <ZoomOutIcon className="h-4 w-4 transform transition-transform group-hover:scale-90" />
             </Button>
           </div>
+
           <canvas
             style={{
               width: '100%',
               height: '500px',
-              backgroundRepeat: 'no-repeat', // Prevents the background image from repeating
-              backgroundPosition: `${bgPosition.x}px ${bgPosition.y}px`,
-              backgroundSize: `${zoomLevel * 100}%`,
-              backgroundImage: `url('data:image/svg+xml;utf8,${encodeURIComponent(
-                svgString,
-              )}')`,
             }}
             ref={canvasRef}
             id="myCanvas"
-            onWheel={onWheel}
+            //onWheel={onWheel}
           ></canvas>
         </Card>
       </CardContent>
