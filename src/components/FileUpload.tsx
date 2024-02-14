@@ -75,7 +75,9 @@ const FileUpload = () => {
     setLoading(true);
     const formData = new FormData();
     formData.append('file', pdf);
-    formData.append('length', fabricLength.toString());
+    if (fabricLength !== undefined) {
+      formData.append('length', fabricLength.toString());
+    }
     formData.append('unit', fabricUnit);
     axios
       .post('/api/pdf', formData, {
