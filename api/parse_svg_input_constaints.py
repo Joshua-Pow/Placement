@@ -84,7 +84,7 @@ def translate_polygons_to_SVG(polygons, viewbox_width, viewbox_height, new_filen
         )
 
         for p in polygons:
-            c = p.contour
+            c = p.getContour()
             f.write('<path d="M')
             for i in range(len(c)):
                 x, y = c[i]
@@ -111,7 +111,7 @@ def duplicate_polygon(
 
     for i in range(quantity - 1):
         new = Polygon(
-            copy.deepcopy(p.contour),
+            copy.deepcopy(p.getContour()),
             p.x,
             p.y,
             p.width,

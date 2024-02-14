@@ -4,6 +4,14 @@ import { Button } from '@/components/ui/button';
 import { ShapePopover } from './ShapePopover';
 import DOMPurify from 'dompurify';
 import { Popover, PopoverTrigger } from './ui/popover';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from './ui/card';
 
 type Props = {
   svgString: string;
@@ -11,19 +19,18 @@ type Props = {
   shapeUpload: (svg: Shape[]) => void;
 };
 
-export type Shape = {
-  id: number;
+export type FoldLocation = 'top' | 'bottom' | 'left' | 'right';
+
+export type Path = {
   svgString: string | SVGElement;
   quantity: number;
   canRotate: boolean;
   placeOnFold: boolean;
+  foldLocation?: FoldLocation;
 };
 
-export type Paths = {
-  svgString: string | SVGElement;
-  quantity: number;
-  canRotate: boolean;
-  placeOnFold: boolean;
+export type Shape = Path & {
+  id: number;
 };
 
 const hitOptions = {
@@ -41,7 +48,7 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_resetCount, setResetCount] = useState<number>(0);
   const [curId, setCurId] = useState<string>('');
-  const [shapeMap, setShapeMap] = useState<Map<string, Paths>>(new Map());
+  const [shapeMap, setShapeMap] = useState<Map<string, Path>>(new Map());
 
   const onSaveClicked = useCallback(() => {
     const shapeArray: Shape[] = [];
@@ -57,16 +64,17 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
       const id = idMatch[1];
 
       const curShapeDetail = {
-        ...(shapeMap.get(id) as Paths),
+        ...(shapeMap.get(id) as Path),
         svgString: pathString,
       };
 
-      const shape = {
+      const shape: Shape = {
         id: Number(id),
         svgString: pathString,
         quantity: curShapeDetail.quantity,
         canRotate: curShapeDetail.canRotate,
         placeOnFold: curShapeDetail.placeOnFold,
+        foldLocation: curShapeDetail.foldLocation,
       };
       console.log('shape', shape);
 
@@ -202,41 +210,52 @@ const EditSVGPage = ({ svgString, shapeUpload }: Props) => {
   }, [setResetCount]);
 
   return (
-    <Popover>
-      <div>
-        <PopoverTrigger asChild>
-          <canvas
-            style={{
-              width: '100%',
-              height: '500px',
-              backgroundRepeat: 'no-repeat', // Prevents the background image from repeating
-              backgroundPosition: 'center', // Centers the background image
-              backgroundSize: 'contain', // Adjust this as needed ('cover' or 'contain')
-              backgroundImage: `url('data:image/svg+xml;utf8,${encodeURIComponent(
-                svgString,
-              )}')`,
-            }}
-            ref={canvasRef}
-            id="myCanvas"
-          ></canvas>
-        </PopoverTrigger>
-        <div className="flex justify-between">
-          <Button
-            variant="secondary"
-            style={{ marginRight: 5 }}
-            onClick={onClearClicked}
-          >
-            Reset
-          </Button>
-          <ShapePopover
-            shapeDetails={shapeMap.get(curId) as Paths}
-            setShapeMap={setShapeMap}
-            id={curId}
-          />
-          <Button onClick={onSaveClicked}>Save</Button>
-        </div>
-      </div>
-    </Popover>
+    <Card>
+      <CardHeader>
+        <CardTitle>Shape Editor</CardTitle>
+        <CardDescription>
+          Move, Resize and adjust the shapes so they overlap the outlines in the
+          background
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Card>
+          <Popover>
+            <PopoverTrigger asChild>
+              <canvas
+                style={{
+                  width: '100%',
+                  height: '500px',
+                  backgroundRepeat: 'no-repeat', // Prevents the background image from repeating
+                  backgroundPosition: 'center', // Centers the background image
+                  backgroundSize: 'contain', // Adjust this as needed ('cover' or 'contain')
+                  backgroundImage: `url('data:image/svg+xml;utf8,${encodeURIComponent(
+                    svgString,
+                  )}')`,
+                }}
+                ref={canvasRef}
+                id="myCanvas"
+              ></canvas>
+            </PopoverTrigger>
+            <ShapePopover
+              shapeDetails={shapeMap.get(curId) as Path}
+              setShapeMap={setShapeMap}
+              id={curId}
+            />
+          </Popover>
+        </Card>
+      </CardContent>
+      <CardFooter className="flex justify-between">
+        <Button
+          variant="secondary"
+          style={{ marginRight: 5 }}
+          onClick={onClearClicked}
+        >
+          Reset
+        </Button>
+        <Button onClick={onSaveClicked}>Save</Button>
+      </CardFooter>
+    </Card>
   );
 };
 

@@ -35,6 +35,16 @@ class Pdf(Resource):
         return {"message": string}
 
     def post(self):
+        """
+        Endpoint Description:
+        - Purpose: Receives a PDF file and processes it to extract the shapes.
+        - Request Format:
+            {
+                "file": <PDF file>,
+                "length": <fabric length>,
+                "unit": <fabric unit>
+            }
+        """
         # Define the path for the 'pdf' folder
         path = os.path.join(os.getcwd(), "api", "pdf")
 
@@ -43,6 +53,9 @@ class Pdf(Resource):
 
         # Process the uploaded file
         file = request.files["file"]
+        fabricLength = request.form["length"]
+        fabricUnit = request.form["unit"]
+        print(f"Fabric Length: {fabricLength} {fabricUnit}")
         if file and file.filename:
             # Secure the filename and save the file
             secureName = secure_filename(file.filename)
@@ -70,6 +83,7 @@ class Pdf(Resource):
                         "quantity": 1,
                         "canRotate": false,
                         "placeOnFold": false,
+                        "foldLocation"?: "top",
                         "svgString": "<path id='a' ... />"
                     }
                 ]
@@ -95,12 +109,14 @@ class Pdf(Resource):
         for svg in svgs:
             polygons.extend(parse_svg(svg["svgString"]))
 
-        # Need to add duplicates after parsing all the polygons since there duplicates will overlap space where the other shapes will be
-        # TODO: look into preventing duplicates from overlapping
-        for svg in svgs:
             if svg["quantity"] > 1:
                 print(f"Duplicate {svg['quantity']} times")
                 duplicate_polygon(polygons, svg["id"], svg["quantity"], len(svgs))
+
+            # TODO: handle fold location
+            if svg["placeOnFold"]:
+                print("Place on fold")
+                print(svg["foldLocation"])
 
         # Create a json object to hold all polygons
         json_polygons = {}
@@ -139,25 +155,25 @@ class Poll(Resource):
             data = json.loads(polygons[p])
             polygonArray.append(
                 Polygon(
-                    data["contour"],
-                    data["x"],
-                    data["y"],
-                    data["width"],
-                    data["height"],
+                    contour=data["contour"],
+                    x=data["x"],
+                    y=data["y"],
+                    width=data["width"],
+                    height=data["height"],
                     bonding_box_margin=data["bonding_box_margin"],
                     pid=data["pid"],
                 )
             )
 
         # TODO: change x to be the width of the fabric
-        container_max_x = 10000
-        container_max_y = 40000
+        container_max_x = 2000
+        container_max_y = 2000
         rectangle_packing(polygonArray, container_max_x, container_max_y)
 
         translate_polygons_to_SVG(
             polygonArray,
             2000,
-            1000,
+            2000,
             f"api/svg/pattern_page_{id}.svg",
         )
         return send_from_directory(
