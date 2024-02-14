@@ -84,6 +84,15 @@ def extract_from_image(filename_paths):
         pages_height.append(height)
         total_height += height
 
+        # store resolution
+    
+    # store image resolution for yardage calculations
+    with open("./api/resolution.svg", "w+") as f:
+        f.write(
+            f'pixel_width: {width} pixel_height: {total_height}'
+        )
+        f.close()
+
     # save to a svg file
     output_svg_path = "./api/simple_shapes.svg"
     with open(output_svg_path, "w+") as f:
@@ -106,5 +115,6 @@ def extract_from_image(filename_paths):
                     f.write(f"{x} {y} ")
                 f.write('Z" fill="none" stroke="#6d28d9" stroke-width="15"/>')
         f.write("</svg>")
+        f.close()
 
     return output_svg_path

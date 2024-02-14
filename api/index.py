@@ -11,6 +11,7 @@ from api.parse_svg_input_constaints import (
     duplicate_polygon,
 )
 from api.polygon import Polygon
+from api.resolution import Resolution
 from api.rectangle_nesting import rectangle_packing
 
 app = Flask(__name__)
@@ -50,6 +51,8 @@ class Pdf(Resource):
 
         # Create the 'pdf' folder if it does not exist
         os.makedirs(path, exist_ok=True)
+
+        # TODO: Process fabric width information in request
 
         # Process the uploaded file
         file = request.files["file"]
@@ -170,12 +173,18 @@ class Poll(Resource):
         container_max_y = 2000
         rectangle_packing(polygonArray, container_max_x, container_max_y)
 
+        # TODO: read resolution.svg to get width, height of input.
+        # resolution = Resolution(width, height, path)
+        # resolution.get_final_yardage(polygonArray)
+
         translate_polygons_to_SVG(
             polygonArray,
             2000,
             2000,
             f"api/svg/pattern_page_{id}.svg",
         )
+
+        # TODO: add final yardage info to ouput
         return send_from_directory(
             "./svg/", f"pattern_page_{id}.svg", as_attachment=True
         )
