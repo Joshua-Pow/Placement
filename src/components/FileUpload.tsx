@@ -17,7 +17,7 @@ import {
 } from './ui/select';
 const EditSVGPage = dynamic(() => import('./EditSVGPage'), { ssr: false });
 
-type FabricUnit = 'in' | 'cm';
+type FabricUnit = 'inch' | 'cm';
 
 const FileUpload = () => {
   const { toast } = useToast();
@@ -25,7 +25,7 @@ const FileUpload = () => {
   const [filePath, setFilePath] = useState<string | null>(null);
   const [pdf, setPdf] = useState<string | Blob>('');
   const [fabricWidth, setFabricWidth] = useState<number | undefined>(undefined);
-  const [fabricUnit, setFabricUnit] = useState<FabricUnit>('in');
+  const [fabricUnit, setFabricUnit] = useState<FabricUnit>('inch');
   const [loading, setLoading] = useState<boolean>(false);
   const [svgString, setSvgString] = useState<string>('');
   const [submitted, setSubmitted] = useState<boolean>(false);
@@ -33,7 +33,7 @@ const FileUpload = () => {
   const clearFileInput = () => {
     setFilePath(null);
     setFabricWidth(undefined);
-    setFabricUnit('in');
+    setFabricUnit('inch');
     setPdf('');
     if (inputRef.current) {
       inputRef.current.value = '';
@@ -47,7 +47,7 @@ const FileUpload = () => {
       setSvgString('');
       setSubmitted(false);
       setFabricWidth(undefined);
-      setFabricUnit('in');
+      setFabricUnit('inch');
       setPdf('');
       const file = e.target.files?.[0];
       if (file) {
@@ -172,7 +172,7 @@ const FileUpload = () => {
                   />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="in">inches (in)</SelectItem>
+                  <SelectItem value="inch">inches (in)</SelectItem>
                   <SelectItem value="cm">centimeters (cm)</SelectItem>
                 </SelectContent>
               </Select>

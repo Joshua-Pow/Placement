@@ -27,7 +27,9 @@ api = Api(
     app=app,
 )
 
-resolution_manager = Resolution(0, 0, "test-path")
+resolution_manager = Resolution(
+    pdf_width=0, pdf_height=0, fabric_width=0, fabric_unit="cm"
+)
 
 
 @api.route("/pdf")
@@ -55,16 +57,14 @@ class Pdf(Resource):
         os.makedirs(path, exist_ok=True)
 
         # GRACE-TODO: Process fabric width information in request
-        fabricWidth = request.form["width"]
-        fabricUnit = request.form["unit"]
-        resolution_manager.width = fabricWidth
-        resolution_manager.height = fabricWidth * 4
+        resolution_manager.fabric_width = int(request.form["width"])
+        resolution_manager.fabric_unit = request.form["unit"]
 
         # Process the uploaded file
         file = request.files["file"]
-        fabricLength = request.form["length"]
-        fabricUnit = request.form["unit"]
-        print(f"Fabric Length: {fabricLength} {fabricUnit}")
+        print(
+            f"Fabric Length: {resolution_manager.fabric_width} {resolution_manager.fabric_unit}"
+        )
         if file and file.filename:
             # Secure the filename and save the file
             secureName = secure_filename(file.filename)
@@ -72,8 +72,8 @@ class Pdf(Resource):
             file.save(savePath)
 
             # TODO: better file path naming
-            image_paths = convert_pdf_to_png(savePath, resolution_manager)
-            svg_output_path = extract_from_image(image_paths)
+            image_paths = convert_pdf_to_png(savePath)
+            svg_output_path = extract_from_image(image_paths, resolution_manager)
             # Send the processed file as a response
             return send_from_directory("./", "simple_shapes.svg", as_attachment=True)
         else:
@@ -176,7 +176,7 @@ class Poll(Resource):
 
         container_max_x = resolution_manager._get_bounding_box_width_limit()
         container_max_y = container_max_x * 10
-        rectangle_packing(polygonArray, container_max_x, container_max_y)
+        rectangle_packing(polygonArray, int(container_max_x), int(container_max_y))
 
         final_yardage = resolution_manager.get_final_yardage(
             polygonArray, resolution_manager.fabric_unit
