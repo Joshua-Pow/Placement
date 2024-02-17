@@ -1,5 +1,6 @@
 # GRACE-TODO: fine tune rate of granuality increase with iteration number
 # for now, one rectangle per iteration
+import copy
 
 
 def slice_nesting(polygons, container_max_x, container_max_y, iteration_number=1):
