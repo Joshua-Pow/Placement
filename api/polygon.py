@@ -95,6 +95,10 @@ class Polygon(object):
         self.bbox_w = width + 2 * bonding_box_margin
         self.bbox_h = height + 2 * bonding_box_margin
 
+        # for use in slice nesting
+        self.bbox_list = []
+        self.bbox_list_area = 0
+
     def __repr__(self):
         return "pid: {} Rect bounding box(x:{}, y:{}, width:{}, height:{})".format(
             self.pid, self.bbox_low_x, self.bbox_low_y, self.bbox_w, self.bbox_h
