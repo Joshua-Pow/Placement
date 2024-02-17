@@ -5,7 +5,7 @@
 # TODO: use container_max_x in boundary checks
 
 def slice_nesting(polygons, container_max_x, iteration_number=1):
-     """
+    """
     Packing algorithm which divides shapes along the y-axis into smaller
     rectangles for closer packing. The bounding box is therefore a collection
     of connected rectangles.
@@ -24,7 +24,7 @@ def slice_nesting(polygons, container_max_x, iteration_number=1):
         delta = polygon.height / iteration_number
         polygon.bbox_list_area = 0
 
-        for (i in range iteration_number):
+        for i in range (0,iteration_number):
 
             polygon.bbox_list.append([]) # each polygon has a list of tuple of tuples
             # polygon_boundary = [ (min x, min y), (max x, max y)] [ (min x2, min y2), (max x2, max y2) ] etc
