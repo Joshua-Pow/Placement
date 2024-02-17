@@ -1,9 +1,10 @@
 import cv2 as cv
 import numpy as np
 from pdf2image import pdf2image
+from api.resolution import Resolution
 
 
-def convert_pdf_to_png(filename: str):
+def convert_pdf_to_png(filename: str) -> list[str]:
     """
     Converts a pdf to individual png images and save them in the api/pattern_images folder.
 
@@ -25,7 +26,9 @@ def convert_pdf_to_png(filename: str):
     return image_paths
 
 
-def extract_from_image(filename_paths):
+def extract_from_image(
+    filename_paths: list[str], resolution_manager: Resolution
+) -> str:
     """
     Extracts shape contours from an image and save as SVG paths.
 
@@ -72,7 +75,7 @@ def extract_from_image(filename_paths):
         # cv.imshow('Contours', im)
         # cv.waitKey()
 
-        """ 
+        """
         for c in contours:
             print(len(c))
         """
@@ -83,6 +86,12 @@ def extract_from_image(filename_paths):
 
         pages_height.append(height)
         total_height += height
+
+        # store resolution
+
+    # store image resolution for yardage calculations
+    resolution_manager.pdf_width = width
+    resolution_manager.pdf_height = total_height
 
     # save to a svg file
     output_svg_path = "./api/simple_shapes.svg"
@@ -106,5 +115,6 @@ def extract_from_image(filename_paths):
                     f.write(f"{x} {y} ")
                 f.write('Z" fill="none" stroke="#6d28d9" stroke-width="15"/>')
         f.write("</svg>")
+        f.close()
 
     return output_svg_path

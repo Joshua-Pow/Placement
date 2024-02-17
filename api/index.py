@@ -11,6 +11,7 @@ from api.parse_svg_input_constaints import (
     duplicate_polygon,
 )
 from api.polygon import Polygon
+from api.resolution import Resolution
 from api.rectangle_nesting import rectangle_packing
 
 app = Flask(__name__)
@@ -24,6 +25,10 @@ api = Api(
     default="PDF",
     default_label="PDF related operations",
     app=app,
+)
+
+resolution_manager = Resolution(
+    pdf_width=0, pdf_height=0, fabric_width=0, fabric_unit="cm"
 )
 
 
@@ -51,11 +56,15 @@ class Pdf(Resource):
         # Create the 'pdf' folder if it does not exist
         os.makedirs(path, exist_ok=True)
 
+        # GRACE-TODO: Process fabric width information in request
+        resolution_manager.fabric_width = int(request.form["width"])
+        resolution_manager.fabric_unit = request.form["unit"]
+
         # Process the uploaded file
         file = request.files["file"]
-        fabricLength = request.form["length"]
-        fabricUnit = request.form["unit"]
-        print(f"Fabric Length: {fabricLength} {fabricUnit}")
+        print(
+            f"Fabric Length: {resolution_manager.fabric_width} {resolution_manager.fabric_unit}"
+        )
         if file and file.filename:
             # Secure the filename and save the file
             secureName = secure_filename(file.filename)
@@ -64,7 +73,7 @@ class Pdf(Resource):
 
             # TODO: better file path naming
             image_paths = convert_pdf_to_png(savePath)
-            svg_output_path = extract_from_image(image_paths)
+            svg_output_path = extract_from_image(image_paths, resolution_manager)
             # Send the processed file as a response
             return send_from_directory("./", "simple_shapes.svg", as_attachment=True)
         else:
@@ -165,10 +174,13 @@ class Poll(Resource):
                 )
             )
 
-        # TODO: change x to be the width of the fabric
-        container_max_x = 2000
-        container_max_y = 2000
-        rectangle_packing(polygonArray, container_max_x, container_max_y)
+        container_max_x = resolution_manager._get_bounding_box_width_limit()
+        container_max_y = container_max_x * 10
+        rectangle_packing(polygonArray, int(container_max_x), int(container_max_y))
+
+        final_yardage = resolution_manager.get_final_yardage(
+            polygonArray, resolution_manager.fabric_unit
+        )
 
         translate_polygons_to_SVG(
             polygonArray,
@@ -176,6 +188,8 @@ class Poll(Resource):
             2000,
             f"api/svg/pattern_page_{id}.svg",
         )
+
+        # GRACE-TODO: add final yardage info AND unit to ouput
         return send_from_directory(
             "./svg/", f"pattern_page_{id}.svg", as_attachment=True
         )
