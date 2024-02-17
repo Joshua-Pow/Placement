@@ -74,7 +74,7 @@ const FileUpload = () => {
     const formData = new FormData();
     formData.append('file', pdf);
     if (fabricWidth !== undefined) {
-      formData.append('length', fabricWidth.toString());
+      formData.append('width', fabricWidth.toString());
     }
     formData.append('unit', fabricUnit);
     axios
@@ -146,7 +146,7 @@ const FileUpload = () => {
 
         {pdf && (
           <>
-            <Label htmlFor="size">Fabric length:</Label>
+            <Label htmlFor="size">Fabric width:</Label>
             <div className="flex gap-2">
               {/* TODO: figure out a better number input */}
               <Input
