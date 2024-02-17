@@ -24,9 +24,7 @@ const FileUpload = () => {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [filePath, setFilePath] = useState<string | null>(null);
   const [pdf, setPdf] = useState<string | Blob>('');
-  const [fabricLength, setFabricLength] = useState<number | undefined>(
-    undefined,
-  );
+  const [fabricWidth, setFabricWidth] = useState<number | undefined>(undefined);
   const [fabricUnit, setFabricUnit] = useState<FabricUnit>('in');
   const [loading, setLoading] = useState<boolean>(false);
   const [svgString, setSvgString] = useState<string>('');
@@ -34,7 +32,7 @@ const FileUpload = () => {
 
   const clearFileInput = () => {
     setFilePath(null);
-    setFabricLength(undefined);
+    setFabricWidth(undefined);
     setFabricUnit('in');
     setPdf('');
     if (inputRef.current) {
@@ -48,7 +46,7 @@ const FileUpload = () => {
       setSubmitted(false);
       setSvgString('');
       setSubmitted(false);
-      setFabricLength(undefined);
+      setFabricWidth(undefined);
       setFabricUnit('in');
       setPdf('');
       const file = e.target.files?.[0];
@@ -75,8 +73,8 @@ const FileUpload = () => {
     setLoading(true);
     const formData = new FormData();
     formData.append('file', pdf);
-    if (fabricLength !== undefined) {
-      formData.append('length', fabricLength.toString());
+    if (fabricWidth !== undefined) {
+      formData.append('length', fabricWidth.toString());
     }
     formData.append('unit', fabricUnit);
     axios
@@ -95,7 +93,7 @@ const FileUpload = () => {
         });
         setLoading(false);
       });
-  }, [fabricLength, fabricUnit, pdf, toast]);
+  }, [fabricWidth, fabricUnit, pdf, toast]);
 
   const postSVG = useCallback(
     (svg: Shape[]) => {
@@ -155,11 +153,11 @@ const FileUpload = () => {
                 id="size"
                 disabled={loading || pdf === ''}
                 type="number"
-                value={fabricLength}
+                value={fabricWidth}
                 onChange={(e) => {
                   e.target.value
-                    ? setFabricLength(Number(e.target.value))
-                    : setFabricLength(undefined);
+                    ? setFabricWidth(Number(e.target.value))
+                    : setFabricWidth(undefined);
                 }}
               />
               <Select
