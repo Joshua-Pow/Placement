@@ -27,6 +27,8 @@ api = Api(
     app=app,
 )
 
+resolution_manager = Resolution(0, 0, "test-path")
+
 
 @api.route("/pdf")
 class Pdf(Resource):
@@ -52,7 +54,11 @@ class Pdf(Resource):
         # Create the 'pdf' folder if it does not exist
         os.makedirs(path, exist_ok=True)
 
-        # TODO: Process fabric width information in request
+        # GRACE-TODO: Process fabric width information in request
+        fabricWidth = request.form["width"]
+        fabricUnit = request.form["unit"]
+        resolution_manager.width = fabricWidth
+        resolution_manager.height = fabricWidth * 4
 
         # Process the uploaded file
         file = request.files["file"]
@@ -66,7 +72,7 @@ class Pdf(Resource):
             file.save(savePath)
 
             # TODO: better file path naming
-            image_paths = convert_pdf_to_png(savePath)
+            image_paths = convert_pdf_to_png(savePath, resolution_manager)
             svg_output_path = extract_from_image(image_paths)
             # Send the processed file as a response
             return send_from_directory("./", "simple_shapes.svg", as_attachment=True)
@@ -168,14 +174,13 @@ class Poll(Resource):
                 )
             )
 
-        # TODO: change x to be the width of the fabric
-        container_max_x = 2000
-        container_max_y = 2000
+        container_max_x = resolution_manager._get_bounding_box_width_limit()
+        container_max_y = container_max_x * 10
         rectangle_packing(polygonArray, container_max_x, container_max_y)
 
-        # TODO: read resolution.svg to get width, height of input.
-        # resolution = Resolution(width, height, path)
-        # resolution.get_final_yardage(polygonArray)
+        final_yardage = resolution_manager.get_final_yardage(
+            polygonArray, resolution_manager.fabric_unit
+        )
 
         translate_polygons_to_SVG(
             polygonArray,
@@ -184,7 +189,7 @@ class Poll(Resource):
             f"api/svg/pattern_page_{id}.svg",
         )
 
-        # TODO: add final yardage info to ouput
+        # GRACE-TODO: add final yardage info AND unit to ouput
         return send_from_directory(
             "./svg/", f"pattern_page_{id}.svg", as_attachment=True
         )

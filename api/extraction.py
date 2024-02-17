@@ -25,7 +25,7 @@ def convert_pdf_to_png(filename: str):
     return image_paths
 
 
-def extract_from_image(filename_paths):
+def extract_from_image(filename_paths, resolution_manager):
     """
     Extracts shape contours from an image and save as SVG paths.
 
@@ -87,11 +87,9 @@ def extract_from_image(filename_paths):
         # store resolution
     
     # store image resolution for yardage calculations
-    with open("./api/resolution.svg", "w+") as f:
-        f.write(
-            f'pixel_width: {width} pixel_height: {total_height}'
-        )
-        f.close()
+    resolution_manager.pdf_width = width
+    resolution_manager.pdf_height = total_height
+
 
     # save to a svg file
     output_svg_path = "./api/simple_shapes.svg"

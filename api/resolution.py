@@ -7,17 +7,20 @@ class Resolution(object):
     relating to the original pdf input
     """
 
-    def __init__(self, pdf_width, pdf_height, path):
+    def __init__(self, pdf_width, pdf_height, fabric_width, fabric_unit):
         """
         pdf_width: number of pixels horizontally
         pdf_height: number of pixels vertically
         path: orginal PDF name
         """
-        assert pdf_width > 0 and pdf_height > 0
+        assert pdf_width > 0 and pdf_height > 0 and fabric_width > 0
+        assert fabric_unit in ["cm", "inch"]
 
-        self.width = pdf_width #Pixels
-        self.height = pdf_height
-        self.path = path
+        self.pdf_width = pdf_width #Pixels
+        self.pdf_height = pdf_height
+
+        self.fabric_width = fabric_width #Real world dimensions
+        self.fabric_unit = fabric_unit
 
         """
         The A0 paper size is 84.1 cm x 118.9 cm or 33.1 inches x 46.8 inches
@@ -40,10 +43,9 @@ class Resolution(object):
         polygonArray: a list of Polygon types containing bbox_low_x/y and width/height
         unit: cm or inches
         """
-        pixel_w_h = self._get_bounding_box_length_width(self, polygonArray)
-        real_width = self._get_real_world_yardage(self, pixel_w_h[0], unit)
-        real_height = self._get_real_world_yardage(self, pixel_w_h[1], unit)
-        return real_width, real_height
+        pixel_h = self._get_bounding_box_length(self, polygonArray)
+        #real_width = self._get_real_world_yardage(self, pixel_w_h[0], unit) #only need the height for yardage
+        return pixel_h * self._get_scaling_factor(unit)
 
     def _get_scaling_factor(self, unit="inch"):
         """
@@ -54,27 +56,29 @@ class Resolution(object):
         actual_fabric_length = bounding_box_length * scale
         """
         if (unit[0]=="i"): #inch
-            return ((self.output_width_inch*self.output_height_inch) / (self.width*self.height))
+            return (output_height_inch / self.pdf_height)
 
-        return ((self.output_width_cm*self.output_height_cm) / (self.width*self.height))
+        return (self.output_height_cm / self.pdf_height)
 
 
-    def _get_real_world_yardage(self, bounding_box_length, unit="inch"):
+    def _get_bounding_box_length(self, polygonArray):
         """
-        returns a final yardage measurement of the new pattern layout after nesting algorithms
-        bounding_box_length: a pixel number
-        """
-        return bounding_box_length * self._get_scaling_factor(unit)
-
-    def _get_bounding_box_length_width(self, polygonArray):
-        """
-        returns tuple of max x,y coordinate in all polygon bounding boxes
+        returns max y coordinate in all polygon bounding boxes
         polygonArray: a list of Polygon types containing bbox_low_x/y and width/height
         """
-        current_width = 0
         current_length = 0
 
         for polygon in polygonArray:
-            current_length = max(current_length,polygon.bbox_low_y + polygon.height > current_length)
-            current_width = max(current_width,polygon.bbox_low_x + polygon.width > current_width)
-        return current_width, current_length
+            current_length = max(current_length,polygon.bbox_low_y + polygon.height)
+        return current_width
+
+    def _get_bounding_box_width_limit(self):
+        """
+        returns a pixel value representing the fabric width scaled to the input pdf dimensions
+        """
+        if (self.fabric_unit[0] == 'i'):
+            a0_width = self.output_width_inch
+        else:
+            a0_width = self.output_height_cm
+
+        return pdf_width / a0_width * self.fabric_width
