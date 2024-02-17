@@ -22,6 +22,7 @@ def slice_nesting(polygons, container_max_x, iteration_number=1):
     for polygon in polygons:
         top_y = polygon.y
         delta = polygon.height / iteration_number
+        print(f"! delta is {delta}")
         polygon.bbox_list_area = 0
 
         for i in range(0, iteration_number):
@@ -29,10 +30,11 @@ def slice_nesting(polygons, container_max_x, iteration_number=1):
             # polygon_boundary = [ (min x, min y), (max x, max y)] [ (min x2, min y2), (max x2, max y2) ] etc
 
             # filter points to a specific y band
-            min_y = top_y + (i - 1) * delta
-            max_y = top_y + i * delta
+            min_y = top_y + (i) * delta
+            max_y = top_y + (i+1) * delta
             points_in_range = []
             for point in polygon.getContour():
+                
                 if max_y > point[1] and point[1] > min_y:
                     points_in_range.append(point)
 
@@ -44,7 +46,7 @@ def slice_nesting(polygons, container_max_x, iteration_number=1):
             min_x = min(points_in_range, key=lambda point: point[0])
             max_x = max(points_in_range, key=lambda point: point[0])
             polygon.bbox_list.append(((min_x, min_y), (max_x, max_y)))
-            polygon.bbox_list_area += (max_x - min_x) * (max_y - min_y)
+            polygon.bbox_list_area += (max_x- min_x) * (max_y - min_y)
 
     # pack in order of descending size
     polygons.sort(key=lambda polygon: polygon.bbox_list_area, reverse=True)
