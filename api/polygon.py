@@ -289,7 +289,7 @@ class Polygon(object):
         x_move = new_bbox_low_x - self.bbox_low_x
         y_move = new_bbox_low_y - self.bbox_low_y
 
-        for (box in self.bbox_list):
+        for box in self.bbox_list:
             box[0][0] += x_move
             box[1][0] += x_move
             box[0][1] += y_move
