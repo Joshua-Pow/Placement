@@ -45,10 +45,12 @@ export default function About() {
             <TabsContent value="upload">
               <Card>
                 <CardHeader>
-                  <CardTitle>Upload your file</CardTitle>
-                  <CardDescription>
-                    Make changes to your account here.
-                  </CardDescription>
+                  <CardTitle>
+                    <p className="scroll-m-20 text-lg tracking-tight font-normal">
+                      Click the Choose File button to select and upload your PDF
+                      of shape layout.
+                    </p>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Image
@@ -69,8 +71,13 @@ export default function About() {
             <TabsContent value="adjust">
               <Card>
                 <CardHeader>
-                  <CardTitle>Password</CardTitle>
-                  <CardDescription>Change your password here.</CardDescription>
+                  <CardTitle>
+                    <p className="scroll-m-20 text-lg tracking-tight font-normal">
+                      In the shape editor you can adjust the shapes to fit the
+                      outlines in the background, as well as duplicating,
+                      rotating, and marking the place on fold.
+                    </p>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Image
@@ -91,8 +98,12 @@ export default function About() {
             <TabsContent value="save">
               <Card>
                 <CardHeader>
-                  <CardTitle>Password</CardTitle>
-                  <CardDescription>Change your password here.</CardDescription>
+                  <CardTitle>
+                    <p className="scroll-m-20 text-lg tracking-tight font-normal">
+                      From all the iteration results shown, you can select the
+                      desired version and save it as a PDF.
+                    </p>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Image
