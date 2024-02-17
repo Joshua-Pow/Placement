@@ -31,9 +31,12 @@ def slice_nesting(polygons, container_max_x, iteration_number=1):
             # filter points to a specific y band
             min_y = top_y + (i - 1) * delta
             max_y = top_y + i * delta
-            points_in_range = filter(
-                lambda obj: max_y > obj[1] > min_y, polygon.contour()
-            )
+            points_in_range = []
+            for point in polygon.getContour():
+                if max_y > point[1] and point[1] > min_y:
+                    points_in_range.append(point)
+
+            print(f"!!! grace debug delta {delta} and min_y {min_y} and max_y {max_y} and p len {len(points_in_range)}")
 
             # store min and max
             # TODO: optimize min-max search since lines are continuous, so the shape will always
