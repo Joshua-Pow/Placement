@@ -8,19 +8,33 @@ import axios from 'axios';
 import dynamic from 'next/dynamic';
 import IterationVisualizer from './IterationVisualizer';
 import { Shape } from './EditSVGPage';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/select';
 const EditSVGPage = dynamic(() => import('./EditSVGPage'), { ssr: false });
+
+type FabricUnit = 'in' | 'cm';
 
 const FileUpload = () => {
   const { toast } = useToast();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [filePath, setFilePath] = useState<string | null>(null);
   const [pdf, setPdf] = useState<string | Blob>('');
+  const [fabricWidth, setFabricWidth] = useState<number | undefined>(undefined);
+  const [fabricUnit, setFabricUnit] = useState<FabricUnit>('in');
   const [loading, setLoading] = useState<boolean>(false);
   const [svgString, setSvgString] = useState<string>('');
   const [submitted, setSubmitted] = useState<boolean>(false);
 
-  const clearInput = () => {
+  const clearFileInput = () => {
     setFilePath(null);
+    setFabricWidth(undefined);
+    setFabricUnit('in');
+    setPdf('');
     if (inputRef.current) {
       inputRef.current.value = '';
     }
@@ -31,6 +45,10 @@ const FileUpload = () => {
       setLoading(true);
       setSubmitted(false);
       setSvgString('');
+      setSubmitted(false);
+      setFabricWidth(undefined);
+      setFabricUnit('in');
+      setPdf('');
       const file = e.target.files?.[0];
       if (file) {
         if (file.type === 'application/pdf') {
@@ -41,10 +59,10 @@ const FileUpload = () => {
             variant: 'destructive',
             description: 'Incorrect file type, must be a pdf',
           });
-          clearInput();
+          clearFileInput();
         }
       } else {
-        clearInput();
+        clearFileInput();
       }
       setLoading(false);
     },
@@ -55,10 +73,14 @@ const FileUpload = () => {
     setLoading(true);
     const formData = new FormData();
     formData.append('file', pdf);
+    if (fabricWidth !== undefined) {
+      formData.append('length', fabricWidth.toString());
+    }
+    formData.append('unit', fabricUnit);
     axios
       .post('/api/pdf', formData, {
         headers: {
-          'Content-Type': 'application/pdf',
+          'Content-Type': 'multipart/form-data',
         },
       })
       .then((res) => {
@@ -71,7 +93,7 @@ const FileUpload = () => {
         });
         setLoading(false);
       });
-  }, [pdf, toast]);
+  }, [fabricWidth, fabricUnit, pdf, toast]);
 
   const postSVG = useCallback(
     (svg: Shape[]) => {
@@ -112,15 +134,51 @@ const FileUpload = () => {
   return (
     <>
       <div className="grid w-full max-w-2xl items-center gap-1.5 pb-1.5">
-        <Label htmlFor="picture">PDF:</Label>
+        <Label htmlFor="pdf">PDF:</Label>
         <Input
           disabled={loading}
           ref={inputRef}
-          id="picture"
+          id="pdf"
           type="file"
           accept=".pdf"
           onChange={onFileUpload}
         />
+
+        {pdf && (
+          <>
+            <Label htmlFor="size">Fabric length:</Label>
+            <div className="flex gap-2">
+              {/* TODO: figure out a better number input */}
+              <Input
+                id="size"
+                disabled={loading || pdf === ''}
+                type="number"
+                value={fabricWidth}
+                onChange={(e) => {
+                  e.target.value
+                    ? setFabricWidth(Number(e.target.value))
+                    : setFabricWidth(undefined);
+                }}
+              />
+              <Select
+                disabled={loading || pdf === ''}
+                value={fabricUnit}
+                onValueChange={(value: FabricUnit) => setFabricUnit(value)}
+              >
+                <SelectTrigger className="w-[280px]">
+                  <SelectValue
+                    className="text-muted-foreground"
+                    placeholder="Unit"
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="in">inches (in)</SelectItem>
+                  <SelectItem value="cm">centimeters (cm)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        )}
       </div>
       {loading ? (
         <div className="flex items-center space-x-4">
@@ -190,7 +248,7 @@ const FileUpload = () => {
       ) : (
         <Preview
           filePath={filePath}
-          clearInput={clearInput}
+          clearFileInput={clearFileInput}
           uploadFile={uploadFile}
         />
       )}

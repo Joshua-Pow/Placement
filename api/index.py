@@ -5,7 +5,11 @@ import os
 import json
 from werkzeug.utils import secure_filename
 from api.extraction import convert_pdf_to_png, extract_from_image
-from api.parse_svg_input_constaints import parse_svg, translate_polygons_to_SVG
+from api.parse_svg_input_constaints import (
+    parse_svg,
+    translate_polygons_to_SVG,
+    duplicate_polygon,
+)
 from api.polygon import Polygon
 from api.rectangle_nesting import rectangle_packing
 
@@ -31,6 +35,16 @@ class Pdf(Resource):
         return {"message": string}
 
     def post(self):
+        """
+        Endpoint Description:
+        - Purpose: Receives a PDF file and processes it to extract the shapes.
+        - Request Format:
+            {
+                "file": <PDF file>,
+                "length": <fabric length>,
+                "unit": <fabric unit>
+            }
+        """
         # Define the path for the 'pdf' folder
         path = os.path.join(os.getcwd(), "api", "pdf")
 
@@ -39,6 +53,9 @@ class Pdf(Resource):
 
         # Process the uploaded file
         file = request.files["file"]
+        fabricLength = request.form["length"]
+        fabricUnit = request.form["unit"]
+        print(f"Fabric Length: {fabricLength} {fabricUnit}")
         if file and file.filename:
             # Secure the filename and save the file
             secureName = secure_filename(file.filename)
@@ -54,10 +71,26 @@ class Pdf(Resource):
             print("Error processing file")
             return {"message": "Error processing file"}
 
-    def put(self):  # Used for sending new user confirmed svg string to run algorithm on
-        # Take the svg string from the request and parse it to polygons
-        svg = request.get_json()["svg"]
-        print(f"svg_string: {svg}")
+    def put(self):
+        """
+        Endpoint Description:
+        - Purpose: Receives a user-confirmed SVG string to run the algorithm on.
+        - Request Format:
+            {
+                "svg": [
+                    {
+                        "id": 1,
+                        "quantity": 1,
+                        "canRotate": false,
+                        "placeOnFold": false,
+                        "foldLocation"?: "top",
+                        "svgString": "<path id='a' ... />"
+                    }
+                ]
+            }
+        """
+
+        svgs = request.get_json()["svg"]
 
         # Generate an unique id and store the polygons in a /polygons/<id>.json file
         # Check if theres an id of 1, if not, create it
@@ -69,8 +102,22 @@ class Pdf(Resource):
         while os.path.exists(f"api/polygons/{next_id}.json"):
             next_id += 1
 
+        # TODO: rework this workflow to do all duplicate and other property changes in the parse_svg function
         # Save the polygon data
-        polygons = parse_svg(svg)
+        polygons: list[Polygon] = []
+        # Go through each svg and parse it into a Polygon object then add it to the polygons list
+        for svg in svgs:
+            polygons.extend(parse_svg(svg["svgString"]))
+
+            if svg["quantity"] > 1:
+                print(f"Duplicate {svg['quantity']} times")
+                duplicate_polygon(polygons, svg["id"], svg["quantity"], len(svgs))
+
+            # TODO: handle fold location
+            if svg["placeOnFold"]:
+                print("Place on fold")
+                print(svg["foldLocation"])
+
         # Create a json object to hold all polygons
         json_polygons = {}
         for polygon in polygons:
@@ -108,25 +155,25 @@ class Poll(Resource):
             data = json.loads(polygons[p])
             polygonArray.append(
                 Polygon(
-                    data["contour"],
-                    data["x"],
-                    data["y"],
-                    data["width"],
-                    data["height"],
+                    contour=data["contour"],
+                    x=data["x"],
+                    y=data["y"],
+                    width=data["width"],
+                    height=data["height"],
                     bonding_box_margin=data["bonding_box_margin"],
                     pid=data["pid"],
                 )
             )
 
         # TODO: change x to be the width of the fabric
-        container_max_x = 10000
-        container_max_y = 40000
+        container_max_x = 2000
+        container_max_y = 2000
         rectangle_packing(polygonArray, container_max_x, container_max_y)
 
         translate_polygons_to_SVG(
             polygonArray,
             2000,
-            1000,
+            2000,
             f"api/svg/pattern_page_{id}.svg",
         )
         return send_from_directory(

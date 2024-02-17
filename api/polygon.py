@@ -7,7 +7,16 @@ class Polygon(object):
     relating to a specific polygon shape
     """
 
-    def __init__(self, contour, x, y, width, height, bonding_box_margin=0, pid=None):
+    def __init__(
+        self,
+        contour: list[list[int]],
+        x: int,
+        y: int,
+        width: int,
+        height: int,
+        bonding_box_margin: int = 0,
+        pid: int | None = None,
+    ):
         """
         contour: list of coordinates describing the polygon
         x, y: min_x, min_y
@@ -65,17 +74,19 @@ class Polygon(object):
         """
         return (self.bbox_h) * (self.bbox_w)
 
-    def contour(self):
+    def getContour(self) -> list[list[int]]:
         return self.contour
 
-    def toJSON(self):
+    def toJSON(self) -> str:
         return json.dumps(self, default=lambda o: o.__dict__)
 
     def mirror_around_centre_y_axis(self):
         """
         Mirror a polygon shape around the centre horizontal y-axis.
         """
-        centre_y = self.bbox_low_y + self.bbox_h / 2
+        centre_y = round(
+            self.bbox_low_y + self.bbox_h / 2
+        )  # TODO: Should this be an int or float?
 
         for coord in self.contour:
             if coord[1] > centre_y:

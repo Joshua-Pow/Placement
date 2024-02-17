@@ -1,7 +1,11 @@
 from rectpack import newPacker
 
+from api.polygon import Polygon
 
-def rectangle_packing(polygons, container_max_x, container_max_y):
+
+def rectangle_packing(
+    polygons: list[Polygon], container_max_x: int, container_max_y: int
+):
     """
     Main function that executes the rectangle packing using rectpack library for now
     TODO: this library trys to pack into the smallerst number of containers, but our goal is to
@@ -14,9 +18,9 @@ def rectangle_packing(polygons, container_max_x, container_max_y):
     """
     packer = newPacker(rotation=False)  # no rotation for now
     for p in polygons:
-        packer.add_rect(p.bbox_w, p.bbox_h, p.pid)
+        packer.add_rect(width=p.bbox_w, height=p.bbox_h, rid=p.pid)
 
-    packer.add_bin(container_max_x, container_max_y, 1)
+    packer.add_bin(width=container_max_x, height=container_max_y, count=1)
 
     packer.pack()
 
@@ -30,4 +34,6 @@ def rectangle_packing(polygons, container_max_x, container_max_y):
         # debug
         print(b, x, y, w, h, rid)
 
-        polygons[rid].move(x, y)
+        polygon_to_move = next((p for p in polygons if p.pid == rid), None)
+        if polygon_to_move:
+            polygon_to_move.move(x, y)
