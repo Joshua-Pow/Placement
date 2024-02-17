@@ -281,3 +281,17 @@ class Polygon(object):
         # print(centroids)
 
         return corners
+    def move_bbox_list(self, new_bbox_low_x, new_bbox_low_y):
+        """
+        For slice nesting, move all rectangles making up a polygon boundary 
+        """
+
+        x_move = new_bbox_low_x - self.bbox_low_x
+        y_move = new_bbox_low_y - self.bbox_low_y
+
+        for (box in self.bbox_list):
+            box[0][0] += x_move
+            box[1][0] += x_move
+            box[0][1] += y_move
+            box[1][1] += y_move
+
