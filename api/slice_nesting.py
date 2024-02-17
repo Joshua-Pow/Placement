@@ -11,7 +11,7 @@ def slice_nesting(polygons, container_max_x, container_max_y, iteration_number=1
 
     Parameters:
         polygons: list of Polygon objects to nest
-        container_max_x, container_max_y: container dimension constraints
+        container_max_x: container dimension constraints, tied to fabric width
         iteration_number: the current iteration to compute. A higher number
         will create more rectangles per polygon
     """
