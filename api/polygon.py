@@ -209,10 +209,11 @@ class Polygon(object):
 
         # update contour
         self.contour = new_contour
+        num_points = len(self.contour)
         # print(self.contour)
 
         # add the new mirrorred points
-        for i in reversed(range(len(self.contour))):
+        for i in reversed(range(num_points)):
             coord = self.contour[i]
             if fold_line == "bottom":
                 new_y_coord = fold_line_axis - coord[1] + fold_line_axis
