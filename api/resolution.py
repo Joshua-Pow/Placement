@@ -1,5 +1,5 @@
 from typing import Literal
-from polygon import Polygon
+from api.polygon import Polygon
 
 
 class Resolution(object):
