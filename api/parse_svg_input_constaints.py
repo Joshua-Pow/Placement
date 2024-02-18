@@ -128,6 +128,7 @@ def duplicate_polygon(
 ## Usage ##
 # polygons = parse_svg("./api/simple_shapes.svg")
 # duplicate_polygon(polygons, 1, 4)  # duplicate the pid=1 shape to have 2 of it
+# polygons[2].centre_fold_manip("bottom")
 
 # container_max_x = 10000
 # container_max_y = 4000
