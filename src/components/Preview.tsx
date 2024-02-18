@@ -11,11 +11,9 @@ import { Button } from '@/components/ui/button';
 
 type Props = {
   filePath: string | null;
-  clearFileInput: () => void;
-  uploadFile: () => void;
 };
 
-const Preview = ({ filePath, clearFileInput, uploadFile }: Props) => {
+const Preview = ({ filePath }: Props) => {
   return (
     <>
       {filePath && (
@@ -33,12 +31,6 @@ const Preview = ({ filePath, clearFileInput, uploadFile }: Props) => {
               src={filePath}
             />
           </CardContent>
-          <CardFooter className="flex justify-between">
-            <Button variant={'secondary'} onClick={clearFileInput}>
-              Cancel
-            </Button>
-            <Button onClick={uploadFile}>Confirm</Button>
-          </CardFooter>
         </Card>
       )}
     </>
