@@ -95,14 +95,14 @@ export function UploadForm({
 
   const clearInput = () => {
     onReset();
-    form.reset({ file: null, width: '0', unit: 'inch' }); // Changed '0' to 0 to match the expected number type
+    form.reset({ file: null, width: 0, unit: 'inch' }); // Changed '0' to 0 to match the expected number type
     setSubmitted(false);
   };
 
   const onSubmit = (data: z.infer<typeof uploadSchema>) => {
     //Save the file to the server so it can be sent to the backend
     const pdfFile = data.file[0];
-    onSubmitFile(pdfFile, data.width, data.unit);
+    onSubmitFile(pdfFile, data.width as number, data.unit as FabricUnit);
     setSubmitted(true);
 
     //Submit the form
