@@ -64,6 +64,14 @@ export default function NavBar() {
             About us
           </Link>
         </NavbarItem>
+        <NavbarItem isActive={pathName === '/tutorial'}>
+          <Link
+            color={pathName === '/tutorial' ? 'primary' : 'foreground'}
+            href="/tutorial"
+          >
+            Tutorial
+          </Link>
+        </NavbarItem>
       </NavbarContent>
       <NavbarContent justify="end">
         <NavbarItem>
