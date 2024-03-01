@@ -118,14 +118,14 @@ class Pdf(Resource):
         for svg in svgs:
             polygons.extend(parse_svg(svg["svgString"]))
 
-            if svg["quantity"] > 1:
-                print(f"Duplicate {svg['quantity']} times")
-                duplicate_polygon(polygons, svg["id"], svg["quantity"], len(svgs))
-
-            # TODO: handle fold location
             if svg["placeOnFold"]:
                 print("Place on fold")
                 print(svg["foldLocation"])
+                polygons[-1].centre_fold_manip(svg["foldLocation"])
+
+            if svg["quantity"] > 1:
+                print(f"Duplicate {svg['quantity']} times")
+                duplicate_polygon(polygons, svg["id"], svg["quantity"], len(svgs))
 
         # Create a json object to hold all polygons
         json_polygons = {}

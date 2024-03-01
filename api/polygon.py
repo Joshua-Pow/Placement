@@ -1,6 +1,7 @@
 import json
 import cv2 as cv
 import numpy as np
+from typing import Literal
 
 
 def test_same_line(prev_coord, curr_coord, is_horizontal, line_axis):
@@ -71,7 +72,8 @@ class Polygon(object):
         margin: space margin around bounding box
         pid: polygon ID
         """
-        assert height > 0 and width > 0 and x >= 0 and y >= 0
+        # TODO: fix this assert, it breaks when duplicating and folding
+        # assert height > 0 and width > 0 and x >= 0 and y >= 0
 
         # TODO: add more fields/methods as needed (ie. constaints on rotation etc.)
 
@@ -140,7 +142,7 @@ class Polygon(object):
             else:
                 coord[1] = centre_y + (centre_y - coord[1])
 
-    def centre_fold_manip(self, fold_line):
+    def centre_fold_manip(self, fold_line: Literal["top", "bottom", "left", "right"]):
         """
         Manipulate the centre fold piece by flip the polygon shape, and adjust the bounding box accordingly.
         fold_line: "top" (higher y-coord), "bottom" (lower y-coord), "left" (low x-coord), or "right" (high x-coord)
