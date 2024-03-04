@@ -14,6 +14,7 @@ from api.polygon import Polygon
 from api.resolution import Resolution
 from api.rectangle_nesting import rectangle_packing
 from api.slice_nesting import slice_nesting
+from flask import make_response
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -142,18 +143,29 @@ class Pdf(Resource):
 @api.route("/poll")
 class Poll(Resource):
     def get(self):
+        """
+        Endpoint Description:
+        - Purpose: Polls the server for the status of the algorithm.
+        - Request Format:
+            {
+                "id": <id>,
+                "iteration": <iteration>
+            }
+        """
+
         # Check if the id exists in the polygons folder
         # If it does, load the polygons from the file
         # Run the rectangle packing algorithm
         # Return the svg string to the user
         id = request.args.get("id")
+        iterationNumber = request.args.get("iteration") or 1
         polygons = []
 
         if not os.path.exists("api/polygons"):
-            return {"message": "No polygons folder exists"}
+            return {"message": "No polygons folder exists"}, 404
 
         if not os.path.exists(f"api/polygons/{id}.json"):
-            return {"message": "No polygons file exists for that id"}
+            return {"message": "No polygons file exists for that id"}, 404
 
         with open(f"api/polygons/{id}.json", "r") as file:
             polygons = json.load(file)
@@ -177,8 +189,8 @@ class Poll(Resource):
 
         container_max_x = resolution_manager._get_bounding_box_width_limit()
         container_max_y = container_max_x * 10
-        #rectangle_packing(polygonArray, int(container_max_x), int(container_max_y))
-        slice_nesting(polygonArray, int(container_max_x))
+        # rectangle_packing(polygonArray, int(container_max_x), int(container_max_y))
+        slice_nesting(polygonArray, int(container_max_x), int(iterationNumber))
 
         final_yardage = resolution_manager.get_final_yardage(
             polygonArray, resolution_manager.fabric_unit
@@ -191,10 +203,13 @@ class Poll(Resource):
             f"api/svg/pattern_page_{id}.svg",
         )
 
-        # GRACE-TODO: add final yardage info AND unit to ouput
-        return send_from_directory(
-            "./svg/", f"pattern_page_{id}.svg", as_attachment=True
+        response = make_response(
+            send_from_directory("./svg/", f"pattern_page_{id}.svg", as_attachment=True)
         )
+        response.headers["yardage"] = (
+            f"{final_yardage} {resolution_manager.fabric_unit}"
+        )
+        return response
 
 
 if __name__ == "__main__":

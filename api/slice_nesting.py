@@ -36,6 +36,10 @@ def slice_nesting(polygons, container_max_x, container_max_y, iteration_number=1
                 if max_y > point[1] and point[1] > min_y:
                     points_in_range.append(point)
 
+            # Check if points_in_range is not empty before proceeding
+            if not points_in_range:
+                continue  # Skip to the next iteration if no points are in range
+
             print(
                 f"!!! grace debug delta {delta} and min_y {min_y} and max_y {max_y} and p len {len(points_in_range)}"
             )

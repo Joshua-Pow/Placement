@@ -13,18 +13,26 @@ const EditSVGPage = dynamic(() => import('./EditSVGPage'), { ssr: false });
 export type FabricUnit = z.infer<typeof uploadSchema>['unit'];
 type PdfFile = z.infer<typeof uploadSchema>['file'];
 type FabricWidth = z.infer<typeof uploadSchema>['width'];
+type Iteration = { svg: string; yardage: string };
+export type Iterations = { [key: number]: Iteration };
 
 const FileUpload = () => {
   const { toast } = useToast();
   const [filePath, setFilePath] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [svgString, setSvgString] = useState<string>('');
+  const [iterationId, setIterationId] = useState<string>('');
+  const [iterationCount, setIterationCount] = useState<number>(1);
+  const [iterationSVGs, setIterationSVGs] = useState<Iterations>({});
   const [submitted, setSubmitted] = useState<boolean>(false);
 
   const onReset = useCallback(() => {
     setSubmitted(false);
     setFilePath(null);
     setSvgString('');
+    setIterationId('');
+    setIterationCount(1);
+    setIterationSVGs([]);
   }, []);
 
   const onFileUpload = useCallback(
@@ -63,6 +71,27 @@ const FileUpload = () => {
     [toast],
   );
 
+  const pollSVG = useCallback((id: string, iterationCount: number) => {
+    axios
+      .get(`/api/poll/`, {
+        params: { id: id, iteration: iterationCount },
+      })
+      .then((response) => {
+        console.log('Polling response:', response.headers['yardage']);
+        const svg = response.data;
+        const yardage = response.headers['yardage'];
+        setIterationSVGs((prev) => ({
+          ...prev,
+          [iterationCount]: { svg: svg, yardage: yardage },
+        }));
+        setIterationCount(iterationCount + 1);
+        setTimeout(() => pollSVG(id, iterationCount + 1), 3000);
+      })
+      .catch((error) => {
+        console.log('Polling error:', error);
+      });
+  }, []);
+
   const postSVG = useCallback(
     (svg: Shape[]) => {
       //PUT to the /api/pdf/ route
@@ -77,15 +106,11 @@ const FileUpload = () => {
             description: 'File submitted successfully!',
           });
           const id = response.data.id;
-          axios.get(`/api/poll/`, { params: { id: id } }).then((response) => {
-            const svg = response.data;
-            console.log('svg', svg);
-            setSvgString(svg);
-            setLoading(false);
-          });
+          setIterationId(id);
+          pollSVG(id, iterationCount);
         });
     },
-    [toast],
+    [iterationCount, pollSVG, toast],
   );
 
   const shapeUpload = useCallback(
@@ -94,6 +119,7 @@ const FileUpload = () => {
       setSubmitted(true);
       // const svg = paper.project.exportSVG({ asString: true }) as string;
       postSVG(svg);
+      setLoading(false);
     },
     [postSVG],
   );
@@ -109,9 +135,7 @@ const FileUpload = () => {
           <LoadingSkeleton />
         ) : svgString ? (
           submitted ? (
-            <IterationVisualizer
-              iterations={Array(40).fill({ svg: svgString })}
-            />
+            <IterationVisualizer iterations={iterationSVGs} />
           ) : (
             <EditSVGPage
               svgString={svgString}

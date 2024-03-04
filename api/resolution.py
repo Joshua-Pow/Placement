@@ -41,10 +41,10 @@ class Resolution(object):
     def __repr__(self):
         return f"pdf resolution is width = {self.pdf_width} pixels, height = {self.pdf_height} pixels\nfabric width = {self.fabric_width} {self.fabric_unit}"
 
-    def get_final_yardage(self, polygonArray: list[Polygon], unit="inch"):
+    def get_final_yardage(self, polygonArray: list[Polygon], unit="inch") -> float:
         """
         Calculate final pattern yardage requirement given array of polygons
-        Returns a tuple representing width, height in specified units
+        Returns a float representing the yardage required
         polygonArray: a list of Polygon types containing bbox_low_x/y and width/height
         unit: cm or inches
         """
