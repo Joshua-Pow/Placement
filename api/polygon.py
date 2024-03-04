@@ -140,6 +140,20 @@ class Polygon(object):
             else:
                 coord[1] = centre_y + (centre_y - coord[1])
 
+    def mirror_around_centre_x_axis(self):
+        """
+        Mirror a polygon shape around the centre horizontal x-axis.
+        """
+        centre_x = round(
+            self.bbox_low_x + self.bbox_w / 2
+        )  # TODO: Should this be an int or float?
+
+        for coord in self.contour:
+            if coord[0] > centre_x:
+                coord[0] = centre_x - (coord[0] - centre_x)
+            else:
+                coord[0] = centre_x + (centre_x - coord[0])
+
     def centre_fold_manip(self, fold_line):
         """
         Manipulate the centre fold piece by flip the polygon shape, and adjust the bounding box accordingly.

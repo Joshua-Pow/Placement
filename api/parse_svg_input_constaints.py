@@ -121,7 +121,7 @@ def duplicate_polygon(
         )
 
         if mirror and (i % 2 == 0):
-            new.mirror_around_centre_y_axis()
+            new.mirror_around_centre_x_axis()
         polygons.append(new)
 
 
