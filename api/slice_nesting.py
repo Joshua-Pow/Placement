@@ -32,14 +32,16 @@ def slice_nesting(polygons, container_max_x, iteration_number=1):
 
             # filter points to a specific y band
             min_y = top_y + (i) * delta
-            max_y = top_y + (i+1) * delta
+            max_y = top_y + (i + 1) * delta
             points_in_range = []
             for point in polygon.getContour():
-                
+
                 if max_y > point[1] and point[1] > min_y:
                     points_in_range.append(point)
 
-            print(f"!!! grace debug delta {delta} and min_y {min_y} and max_y {max_y} and p len {len(points_in_range)}")
+            print(
+                f"!!! grace debug delta {delta} and min_y {min_y} and max_y {max_y} and p len {len(points_in_range)}"
+            )
 
             # store min and max
             # TODO: optimize min-max search since lines are continuous, so the shape will always
@@ -70,10 +72,10 @@ def slice_nesting(polygons, container_max_x, iteration_number=1):
         # filter p3 by bbox in range of new shape and only check those
         for i in range(0, len(placed_list)):
             new_poly.move(placed_list[i][0], placed_list[i][1])
-            passed=True
+            passed = True
             for p in p3:
                 if not boundary_check_pass(new_poly, p):
-                    passed=False
+                    passed = False
                     break
 
             # remove that placement from placed_list
@@ -84,7 +86,7 @@ def slice_nesting(polygons, container_max_x, iteration_number=1):
         # add shape bottom left (max y min x) to placed_list
         # add shape top right to placed list
         placed_list.append((new_poly.x, new_poly.y + new_poly.height))
-        placed_list.append((new_poly.x+new_poly.width, new_poly.y))
+        placed_list.append((new_poly.x + new_poly.width, new_poly.y))
 
         # add shape to p3
         p3.append(copy.deepcopy(new_poly))
@@ -131,7 +133,7 @@ def bbox_lists_check_pass(list1, list2):
             # separating axis theorem
             # top leftx = box[1][0] & top lefty = box[1][1]
             # bot rightx = box[0][0] & bot righty = box[0][1]
-            if  not (
+            if not (
                 box1[1][0] < box2[0][0]
                 or box1[0][0] > box2[1][0]
                 or box1[1][1] < box2[0][1]
