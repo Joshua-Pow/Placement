@@ -151,6 +151,11 @@ class Poll(Resource):
                 "id": <id>,
                 "iteration": <iteration>
             }
+        - Response Format:
+            {
+                "svg": "<svg>...</svg>",
+                "yardage": "<yardage> <unit>"
+            }
         """
 
         # Check if the id exists in the polygons folder
@@ -207,7 +212,7 @@ class Poll(Resource):
             send_from_directory("./svg/", f"pattern_page_{id}.svg", as_attachment=True)
         )
         response.headers["yardage"] = (
-            f"{final_yardage} {resolution_manager.fabric_unit}"
+            f"{final_yardage:.2f} {resolution_manager.fabric_unit}"
         )
         return response
 

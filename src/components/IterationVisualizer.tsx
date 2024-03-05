@@ -15,7 +15,7 @@ import { Iterations } from './FileUpload';
 type Props = { iterations: Iterations };
 
 const IterationVisualizer = ({ iterations }: Props) => {
-  const [selectedIteration, setSelectedIteration] = React.useState(0);
+  const [selectedIteration, setSelectedIteration] = React.useState(1);
 
   const handleIterationChange = (index: number) => {
     setSelectedIteration(index);
@@ -103,13 +103,9 @@ const IterationVisualizer = ({ iterations }: Props) => {
 
         <Card className="flex-grow">
           <CardHeader>
-            <CardTitle className="justify-between">
+            <CardTitle>
               <span>{`Iteration ${selectedIteration}`}</span>
-              <span>
-                {iterations[selectedIteration]
-                  ? iterations[selectedIteration].yardage
-                  : 'Loading...'}
-              </span>
+              <span>{` - Yardage: ${iterations[selectedIteration].yardage}`}</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="w-[800px] h-[800px]">

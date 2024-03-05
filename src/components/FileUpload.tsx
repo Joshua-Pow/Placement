@@ -80,10 +80,14 @@ const FileUpload = () => {
         console.log('Polling response:', response.headers['yardage']);
         const svg = response.data;
         const yardage = response.headers['yardage'];
-        setIterationSVGs((prev) => ({
-          ...prev,
-          [iterationCount]: { svg: svg, yardage: yardage },
-        }));
+        console.log('first');
+        setIterationSVGs((prev) => {
+          return {
+            ...prev,
+            [iterationCount]: { svg, yardage },
+          };
+        });
+
         setIterationCount(iterationCount + 1);
         setTimeout(() => pollSVG(id, iterationCount + 1), 3000);
       })
@@ -134,7 +138,7 @@ const FileUpload = () => {
         {loading ? (
           <LoadingSkeleton />
         ) : svgString ? (
-          submitted ? (
+          submitted && Object.keys(iterationSVGs).length > 0 ? (
             <IterationVisualizer iterations={iterationSVGs} />
           ) : (
             <EditSVGPage
