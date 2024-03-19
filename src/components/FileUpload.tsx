@@ -73,6 +73,10 @@ const FileUpload = () => {
   );
 
   const pollSVG = useCallback((id: string, iterationCount: number) => {
+    if (iterationCount > 10) {
+      return;
+    }
+
     axios
       .get(`/api/poll/`, {
         params: { id: id, iteration: iterationCount },
