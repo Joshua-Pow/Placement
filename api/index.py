@@ -195,7 +195,12 @@ class Poll(Resource):
         container_max_x = resolution_manager._get_bounding_box_width_limit()
         container_max_y = container_max_x * 10
         # rectangle_packing(polygonArray, int(container_max_x), int(container_max_y))
-        slice_nesting(polygonArray, int(container_max_x), int(iterationNumber))
+        slice_nesting(
+            polygonArray,
+            int(container_max_x),
+            int(container_max_y),
+            int(iterationNumber),
+        )
 
         final_yardage = resolution_manager.get_final_yardage(
             polygonArray, resolution_manager.fabric_unit
