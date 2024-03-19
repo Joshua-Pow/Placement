@@ -21,6 +21,7 @@ const FileUpload = () => {
   const [filePath, setFilePath] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [svgString, setSvgString] = useState<string>('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [iterationId, setIterationId] = useState<string>('');
   const [iterationCount, setIterationCount] = useState<number>(1);
   const [iterationSVGs, setIterationSVGs] = useState<Iterations>({});
