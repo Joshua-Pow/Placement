@@ -95,9 +95,9 @@ class Polygon(object):
         self.bbox_w = width + 2 * bonding_box_margin
         self.bbox_h = height + 2 * bonding_box_margin
 
-        # for use in slice nesting
+        # for use in slice nesting, bbox_list[i] contains a list of size 2, of size 2
+        # bbox_list[i] = [ [x1,y1], [x2,y2] ]
         self.bbox_list = []
-        self.bbox_list_area = 0
 
     def __repr__(self):
         return "pid: {} Rect bounding box(x:{}, y:{}, width:{}, height:{})".format(
@@ -118,6 +118,20 @@ class Polygon(object):
         self.bbox_low_y = new_bbox_low_y
         self.x += x_move
         self.y += y_move
+        # bbox_list[i] = [ [x1,y1], [x2,y2] ]
+        if self.bbox_list != []:
+            for i in range (len(self.bbox_list)):
+                print(f"minx = {self.bbox_list[i][0][0]} and type of min is {type(self.bbox_list[i][0])}" )
+                self.bbox_list[i][0][0] += x_move 
+                self.bbox_list[i][1][0] += x_move
+                self.bbox_list[i][0][1] += y_move
+                self.bbox_list[i][1][1] += y_move
+            #     print(f"{self.bbox_list[i][0][0]+x_move},{self.bbox_list[i][0][1]+y_move}")
+            #     tup_min = (self.bbox_list[i][0][0]+x_move, self.bbox_list[i][0][1]+y_move)
+            #     tup_max = (self.bbox_list[i][1][0]+x_move, self.bbox_list[i][1][1]+y_move)
+            #     new_tup = (tup_min, tup_max)
+            #     new_list.append(new_tup)
+            # self.bbox_list = new_list
 
     def bounding_box_area(self):
         """
@@ -281,17 +295,3 @@ class Polygon(object):
         # print(centroids)
 
         return corners
-
-    def move_bbox_list(self, new_bbox_low_x, new_bbox_low_y):
-        """
-        For slice nesting, move all rectangles making up a polygon boundary
-        """
-
-        x_move = new_bbox_low_x - self.bbox_low_x
-        y_move = new_bbox_low_y - self.bbox_low_y
-
-        for box in self.bbox_list:
-            box[0][0] += x_move
-            box[1][0] += x_move
-            box[0][1] += y_move
-            box[1][1] += y_move
