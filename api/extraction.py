@@ -66,7 +66,7 @@ def extract_from_image(
         contours, hierarchy = cv.findContours(
             thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE
         )
-        print("extracted:", len(contours), "contours")
+        #print("extracted:", len(contours), "contours")
 
         # draw contours on original image
         cv.drawContours(im, contours, -1, (0, 255, 0), 3)

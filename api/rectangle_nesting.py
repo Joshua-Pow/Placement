@@ -32,7 +32,7 @@ def rectangle_packing(
         b, x, y, w, h, rid = rect
 
         # debug
-        print(b, x, y, w, h, rid)
+        #print(b, x, y, w, h, rid)
 
         polygon_to_move = next((p for p in polygons if p.pid == rid), None)
         if polygon_to_move:

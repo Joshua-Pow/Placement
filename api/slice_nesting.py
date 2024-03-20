@@ -15,15 +15,15 @@ def slice_nesting(polygons, container_max_x, container_max_y, iteration_number=1
         iteration_number: the current iteration to compute. A higher number
         will create more rectangles per polygon
     """
+    m = 5 # spacing buffer
 
     # stage one, update boundaries per polygon
     for polygon in polygons:
         top_y = polygon.y
-        delta = polygon.height / iteration_number
-        print(f"! delta is {delta}")
-        polygon.bbox_list_area = 0
+        slices_count = iteration_number*2-1
+        delta = polygon.height / slices_count
 
-        for i in range(0, iteration_number):
+        for i in range(0, slices_count):
             # polygon.bbox_list.append([])  # each polygon has a list of tuple of tuples
             # polygon_boundary = [ (min x, min y), (max x, max y)] [ (min x2, min y2), (max x2, max y2) ] etc
 
@@ -31,29 +31,36 @@ def slice_nesting(polygons, container_max_x, container_max_y, iteration_number=1
             min_y = top_y + (i) * delta
             max_y = top_y + (i + 1) * delta
             points_in_range = []
+            near_x_min = polygon.x
+            near_x_max = polygon.x+polygon.width
             for point in polygon.getContour():
 
-                if max_y > point[1] and point[1] > min_y:
+                if max_y >= point[1] and point[1] >= min_y:
                     points_in_range.append(point)
+                elif point[1] > near_x_min and point[1] < max_y:
+                    near_x_min = point[1]
+                elif point[1] < near_x_max and point[1] > min_y:
+                    near_x_max = point[1]
 
             # Check if points_in_range is not empty before proceeding
             if not points_in_range:
-                continue  # Skip to the next iteration if no points are in range
+                points_in_range.append( [near_x_min, min_y])
+                points_in_range.append( [near_x_max, max_y])
 
-            print(
-                f"!!! grace debug delta {delta} and min_y {min_y} and max_y {max_y} and p len {len(points_in_range)}"
-            )
 
             # store min and max
             # TODO: optimize min-max search since lines are continuous, so the shape will always
             # be one of the following: < > / \ | (at least 99% of the time)
             min_x = min(points_in_range, key=lambda point: point[0])[0]
             max_x = max(points_in_range, key=lambda point: point[0])[0]
-            polygon.bbox_list.append(((min_x, min_y), (max_x, max_y)))
-            polygon.bbox_list_area += (max_x - min_x) * (max_y - min_y)
+            polygon.bbox_list.append([])
+            polygon.bbox_list[i].append([])
+            polygon.bbox_list[i] =  [min_x, min_y], [max_x, max_y]
+            #polygon.bbox_list.append([ [min_x, min_y], [max_x, max_y]])
 
-    # pack in order of descending size
-    polygons.sort(key=lambda polygon: polygon.bbox_list_area, reverse=True)
+
+    # pack in order of descending length
+    polygons.sort(key=lambda polygon: polygon.height, reverse=True)
 
     # clone list and remove when shapes are placed
     p2 = polygons.copy()
@@ -69,6 +76,9 @@ def slice_nesting(polygons, container_max_x, container_max_y, iteration_number=1
         new_poly = p2[0]
         p2.pop(0)
 
+        #sort potential placements by lowest y + x first
+        placed_list.sort(key=lambda tuple: tuple[1]+0.1*tuple[0], reverse=False)
+
         # move to elements on placed_list until boundary_check_pass
         # filter p3 by bbox in range of new shape and only check those
         for i in range(0, len(placed_list)):
@@ -81,13 +91,19 @@ def slice_nesting(polygons, container_max_x, container_max_y, iteration_number=1
 
             # remove that placement from placed_list
             if passed:
+                print(f"!!slice nesting, placed at i={i}: {placed_list[i][0]}, {placed_list[i][1]}. total placed list: {placed_list}")
+                print(f"shape min: {new_poly.x}, {new_poly.y} & max: {new_poly.x+new_poly.width}, {new_poly.y+new_poly.height}")
                 placed_list.pop(i)
                 break
 
-        # add shape bottom left (max y min x) to placed_list
+        # add shape bottom right
         # add shape top right to placed list
-        placed_list.append((new_poly.x, new_poly.y + new_poly.height))
-        placed_list.append((new_poly.x + new_poly.width, new_poly.y))
+            # for each subslice
+        for slice_box in new_poly.bbox_list:
+            placed_list.append((slice_box[0][1]+m, slice_box[1][1]+m))
+            placed_list.append((slice_box[1][0]+m, slice_box[0][1]+m))
+        
+        placed_list.append((new_poly.x+m, new_poly.y+new_poly.height+m))
 
         # add shape to p3
         p3.append(copy.deepcopy(new_poly))
@@ -101,22 +117,17 @@ def boundary_check_pass(p1, p2):
     This method checks the boundary rectangles of two polygons
     and returns true IF NO collision
     """
-    m = 10  # margin 10 pixels
-    return bbox_lists_check_pass(p1.bbox_list, p2.bbox_list)
-    # check entire polygon bounding boxes first, if these don't intersect then return true
-    # if p1.x - p2.x > m and p2.x + p2.width - p1.x > m:
-    #     if p1.y - p2.y > m and p2.y + p2.height - p1.y > m:
-    #         return bbox_lists_check_pass(p1.bbox_list, p2.bbox_list)
-    #     else:
-    #         return True
+    m = 2  # margin 10 pixels
 
-    # elif p2.x - p1.x > m and p1.x + p1.width - p2.x > m:
-    #     if p2.y - p1.y > m and p1.y + p1.height - p2.y > m:
-    #         return bbox_lists_check_pass(p1.bbox_list, p2.bbox_list)
-    #     else:
-    #         return True
-
-    # return True
+    # if yes intersect, actually check all sub boxes
+    if (
+        p1.x + m <= p2.x + p2.width 
+        and p1.x + p1.width >= p2.x + m
+        and p1.y + p1.height  >= p2.y +m
+        and p1.y + m <= p2.y + p2.height
+    ):
+        return bbox_lists_check_pass(p1.bbox_list, p2.bbox_list)
+    return True
 
 
 def bbox_lists_check_pass(list1, list2):
@@ -127,18 +138,20 @@ def bbox_lists_check_pass(list1, list2):
         list1: list tuple(tuple) of ((minx,miny),(maxx,maxy)) for polygon1
         list2: list tuple(tuple) of ((minx,miny),(maxx,maxy)) for polygon2
     """
-    print(f"list1: {list1}")
+    #print(f"list1: {list1}")
     passed = True
     for box1 in list1:
         for box2 in list2:
             # separating axis theorem
             # top leftx = box[1][0] & top lefty = box[1][1]
             # bot rightx = box[0][0] & bot righty = box[0][1]
-            if not (
-                box1[1][0] < box2[0][0]
-                or box1[0][0] > box2[1][0]
-                or box1[1][1] < box2[0][1]
-                or box1[0][1] > box2[1][1]
+
+            #polygon.bbox_list.append(((min_x, min_y), (max_x, max_y)))
+            if (
+                box1[0][0] <= box2[1][0]
+                and box1[1][0] >= box2[0][0]
+                and box1[0][1] <= box2[1][1]
+                and box1[1][1] >= box2[0][1]
             ):
                 passed = False
     return passed
