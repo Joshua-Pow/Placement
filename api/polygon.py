@@ -1,6 +1,7 @@
 import json
 import cv2 as cv
 import numpy as np
+from typing import Literal
 
 
 def test_same_line(prev_coord, curr_coord, is_horizontal, line_axis):
@@ -71,7 +72,8 @@ class Polygon(object):
         margin: space margin around bounding box
         pid: polygon ID
         """
-        assert height > 0 and width > 0 and x >= 0 and y >= 0
+        # TODO: fix this assert, it breaks when duplicating and folding
+        # assert height > 0 and width > 0 and x >= 0 and y >= 0
 
         # TODO: add more fields/methods as needed (ie. constaints on rotation etc.)
 
@@ -92,6 +94,10 @@ class Polygon(object):
         # bounding box width and height
         self.bbox_w = width + 2 * bonding_box_margin
         self.bbox_h = height + 2 * bonding_box_margin
+
+        # for use in slice nesting
+        self.bbox_list = []
+        self.bbox_list_area = 0
 
     def __repr__(self):
         return "pid: {} Rect bounding box(x:{}, y:{}, width:{}, height:{})".format(
@@ -154,7 +160,7 @@ class Polygon(object):
             else:
                 coord[0] = centre_x + (centre_x - coord[0])
 
-    def centre_fold_manip(self, fold_line):
+    def centre_fold_manip(self, fold_line: Literal["top", "bottom", "left", "right"]):
         """
         Manipulate the centre fold piece by flip the polygon shape, and adjust the bounding box accordingly.
         fold_line: "top" (higher y-coord), "bottom" (lower y-coord), "left" (low x-coord), or "right" (high x-coord)
@@ -289,3 +295,17 @@ class Polygon(object):
         # print(centroids)
 
         return corners
+
+    def move_bbox_list(self, new_bbox_low_x, new_bbox_low_y):
+        """
+        For slice nesting, move all rectangles making up a polygon boundary
+        """
+
+        x_move = new_bbox_low_x - self.bbox_low_x
+        y_move = new_bbox_low_y - self.bbox_low_y
+
+        for box in self.bbox_list:
+            box[0][0] += x_move
+            box[1][0] += x_move
+            box[0][1] += y_move
+            box[1][1] += y_move

@@ -1,99 +1,105 @@
 import React, { useCallback, useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Skeleton } from '@/components/ui/skeleton';
 import Preview from '@/components/Preview';
 import { useToast } from '@/components/ui/use-toast';
 import axios from 'axios';
 import dynamic from 'next/dynamic';
 import IterationVisualizer from './IterationVisualizer';
 import { Shape } from './EditSVGPage';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './ui/select';
+import { UploadForm, uploadSchema } from './UploadForm';
+import { z } from 'zod';
+import LoadingSkeleton from './LoadingSkeleton';
 const EditSVGPage = dynamic(() => import('./EditSVGPage'), { ssr: false });
 
-type FabricUnit = 'inch' | 'cm';
+export type FabricUnit = z.infer<typeof uploadSchema>['unit'];
+type PdfFile = z.infer<typeof uploadSchema>['file'];
+type FabricWidth = z.infer<typeof uploadSchema>['width'];
+type Iteration = { svg: string; yardage: string };
+export type Iterations = { [key: number]: Iteration };
 
 const FileUpload = () => {
   const { toast } = useToast();
-  const inputRef = React.useRef<HTMLInputElement>(null);
   const [filePath, setFilePath] = useState<string | null>(null);
-  const [pdf, setPdf] = useState<string | Blob>('');
-  const [fabricWidth, setFabricWidth] = useState<number | undefined>(undefined);
-  const [fabricUnit, setFabricUnit] = useState<FabricUnit>('inch');
   const [loading, setLoading] = useState<boolean>(false);
   const [svgString, setSvgString] = useState<string>('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [iterationId, setIterationId] = useState<string>('');
+  const [iterationCount, setIterationCount] = useState<number>(1);
+  const [iterationSVGs, setIterationSVGs] = useState<Iterations>({});
   const [submitted, setSubmitted] = useState<boolean>(false);
 
-  const clearFileInput = () => {
+  const onReset = useCallback(() => {
+    setSubmitted(false);
     setFilePath(null);
-    setFabricWidth(undefined);
-    setFabricUnit('inch');
-    setPdf('');
-    if (inputRef.current) {
-      inputRef.current.value = '';
-    }
-  };
+    setSvgString('');
+    setIterationId('');
+    setIterationCount(1);
+    setIterationSVGs([]);
+  }, []);
 
   const onFileUpload = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    (pdfFile: PdfFile) => {
       setLoading(true);
-      setSubmitted(false);
-      setSvgString('');
-      setSubmitted(false);
-      setFabricWidth(undefined);
-      setFabricUnit('inch');
-      setPdf('');
-      const file = e.target.files?.[0];
-      if (file) {
-        if (file.type === 'application/pdf') {
-          setFilePath(URL.createObjectURL(file));
-          setPdf(file);
-        } else {
-          toast({
-            variant: 'destructive',
-            description: 'Incorrect file type, must be a pdf',
-          });
-          clearFileInput();
-        }
-      } else {
-        clearFileInput();
-      }
+      setFilePath(URL.createObjectURL(pdfFile));
       setLoading(false);
     },
-    [setFilePath, setPdf, toast],
+    [setFilePath],
   );
 
-  const uploadFile = useCallback(() => {
-    setLoading(true);
-    const formData = new FormData();
-    formData.append('file', pdf);
-    if (fabricWidth !== undefined) {
+  const onSubmitFile = useCallback(
+    (pdfFile: PdfFile, fabricWidth: FabricWidth, fabricUnit: FabricUnit) => {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append('file', pdfFile);
       formData.append('width', fabricWidth.toString());
-    }
-    formData.append('unit', fabricUnit);
-    axios
-      .post('/api/pdf', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      })
-      .then((res) => {
-        // Receive the filename sent to backend, error checking later
-        console.log(res);
-        setSvgString(res.data);
-        toast({
-          variant: 'default',
-          description: 'File uploaded successfully!',
+      formData.append('unit', fabricUnit);
+      axios
+        .post('/api/pdf', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        })
+        .then((res) => {
+          // Receive the filename sent to backend, error checking later
+          console.log(res);
+          setSvgString(res.data);
+          toast({
+            variant: 'default',
+            description: 'File uploaded successfully!',
+          });
+          setLoading(false);
         });
-        setLoading(false);
+    },
+    [toast],
+  );
+
+  const pollSVG = useCallback((id: string, iterationCount: number) => {
+    if (iterationCount > 10) {
+      return;
+    }
+
+    axios
+      .get(`/api/poll/`, {
+        params: { id: id, iteration: iterationCount },
+      })
+      .then((response) => {
+        console.log('Polling response:', response.headers['yardage']);
+        const svg = response.data;
+        const yardage = response.headers['yardage'];
+        console.log('first');
+        setIterationSVGs((prev) => {
+          return {
+            ...prev,
+            [iterationCount]: { svg, yardage },
+          };
+        });
+
+        setIterationCount(iterationCount + 1);
+        setTimeout(() => pollSVG(id, iterationCount + 1), 3000);
+      })
+      .catch((error) => {
+        console.log('Polling error:', error);
       });
-  }, [fabricWidth, fabricUnit, pdf, toast]);
+  }, []);
 
   const postSVG = useCallback(
     (svg: Shape[]) => {
@@ -109,23 +115,19 @@ const FileUpload = () => {
             description: 'File submitted successfully!',
           });
           const id = response.data.id;
-          axios.get(`/api/poll/`, { params: { id: id } }).then((response) => {
-            const svg = response.data;
-            console.log('svg', svg);
-            setSvgString(svg);
-          });
+          setIterationId(id);
+          pollSVG(id, iterationCount);
         });
     },
-    [toast],
+    [iterationCount, pollSVG, toast],
   );
 
   const shapeUpload = useCallback(
     (svg: Shape[]) => {
       setLoading(true);
-      setSubmitted(false);
+      setSubmitted(true);
       // const svg = paper.project.exportSVG({ asString: true }) as string;
       postSVG(svg);
-      setSubmitted(true);
       setLoading(false);
     },
     [postSVG],
@@ -133,125 +135,27 @@ const FileUpload = () => {
 
   return (
     <>
-      <div className="grid w-full max-w-2xl items-center gap-1.5 pb-1.5">
-        <Label htmlFor="pdf">PDF:</Label>
-        <Input
-          disabled={loading}
-          ref={inputRef}
-          id="pdf"
-          type="file"
-          accept=".pdf"
-          onChange={onFileUpload}
-        />
-
-        {pdf && (
-          <>
-            <Label htmlFor="size">Fabric width:</Label>
-            <div className="flex gap-2">
-              {/* TODO: figure out a better number input */}
-              <Input
-                id="size"
-                disabled={loading || pdf === ''}
-                type="number"
-                value={fabricWidth}
-                onChange={(e) => {
-                  e.target.value
-                    ? setFabricWidth(Number(e.target.value))
-                    : setFabricWidth(undefined);
-                }}
-              />
-              <Select
-                disabled={loading || pdf === ''}
-                value={fabricUnit}
-                onValueChange={(value: FabricUnit) => setFabricUnit(value)}
-              >
-                <SelectTrigger className="w-[280px]">
-                  <SelectValue
-                    className="text-muted-foreground"
-                    placeholder="Unit"
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="inch">inches (in)</SelectItem>
-                  <SelectItem value="cm">centimeters (cm)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </>
-        )}
-      </div>
-      {loading ? (
-        <div className="flex items-center space-x-4">
-          <Skeleton className="h-12 w-12 rounded-full" />
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-[250px]" />
-            <Skeleton className="h-4 w-[200px]" />
-          </div>
-        </div>
-      ) : svgString ? (
-        submitted ? (
-          <IterationVisualizer
-            iterations={[
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-              { svg: svgString },
-            ]}
-          />
+      <UploadForm
+        onSubmitFile={onSubmitFile}
+        onFileUpload={onFileUpload}
+        onReset={onReset}
+      >
+        {loading ? (
+          <LoadingSkeleton />
+        ) : svgString ? (
+          submitted && Object.keys(iterationSVGs).length > 0 ? (
+            <IterationVisualizer iterations={iterationSVGs} />
+          ) : (
+            <EditSVGPage
+              svgString={svgString}
+              setLoading={setLoading}
+              shapeUpload={shapeUpload}
+            />
+          )
         ) : (
-          <EditSVGPage
-            svgString={svgString}
-            setLoading={setLoading}
-            shapeUpload={shapeUpload}
-          />
-        )
-      ) : (
-        <Preview
-          filePath={filePath}
-          clearFileInput={clearFileInput}
-          uploadFile={uploadFile}
-        />
-      )}
+          <Preview filePath={filePath} />
+        )}
+      </UploadForm>
     </>
   );
 };

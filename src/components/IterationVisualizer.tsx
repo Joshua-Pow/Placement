@@ -10,12 +10,12 @@ import { ScrollShadow } from '@nextui-org/react';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Download } from 'lucide-react';
+import { Iterations } from './FileUpload';
 
-type Iteration = { svg: string };
-type Props = { iterations: Iteration[] };
+type Props = { iterations: Iterations };
 
 const IterationVisualizer = ({ iterations }: Props) => {
-  const [selectedIteration, setSelectedIteration] = React.useState(0);
+  const [selectedIteration, setSelectedIteration] = React.useState(1);
 
   const handleIterationChange = (index: number) => {
     setSelectedIteration(index);
@@ -74,16 +74,20 @@ const IterationVisualizer = ({ iterations }: Props) => {
             hideScrollBar
             className="gap-4 flex flex-col max-h-[300px] overflow-y-auto"
           >
-            {iterations.map((iterationValue, index) => (
-              <Badge
-                key={index}
-                className={`cursor-pointer self-center`}
-                variant={selectedIteration === index ? 'default' : 'secondary'}
-                onClick={() => handleIterationChange(Number(index))}
-              >
-                <span className="font-bold">{`Iteration ${index}`}</span>
-              </Badge>
-            ))}
+            {Object.keys(iterations)
+              .sort((a, b) => Number(a) - Number(b))
+              .map((key) => (
+                <Badge
+                  key={key}
+                  className={`cursor-pointer self-center`}
+                  variant={
+                    selectedIteration === Number(key) ? 'default' : 'secondary'
+                  }
+                  onClick={() => handleIterationChange(Number(key))}
+                >
+                  <span className="font-bold">{`Iteration ${key}`}</span>
+                </Badge>
+              ))}
           </ScrollShadow>
           <div className="flex items-center gap-2">
             <span className="font-bold">Save: </span>
@@ -99,7 +103,10 @@ const IterationVisualizer = ({ iterations }: Props) => {
 
         <Card className="flex-grow">
           <CardHeader>
-            <CardTitle className="text-center">{`Iteration ${selectedIteration}`}</CardTitle>
+            <CardTitle>
+              <span>{`Iteration ${selectedIteration}`}</span>
+              <span>{` - Yardage: ${iterations[selectedIteration].yardage}`}</span>
+            </CardTitle>
           </CardHeader>
           <CardContent className="w-[800px] h-[800px]">
             <div
