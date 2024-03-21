@@ -106,7 +106,11 @@ def duplicate_polygon(
         print("invalid pid for piece duplication!")
         return
 
-    p = next((poly for poly in polygons if poly.pid == pid), None)
+    p = None
+    for poly in polygons:
+        if poly.pid == pid:
+            p = poly
+            break
     if p is None:
         print("invalid pid for piece duplication!")
         return
