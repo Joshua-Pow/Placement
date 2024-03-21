@@ -135,7 +135,7 @@ class Pdf(Resource):
             json_polygons[polygon.pid] = polygon.toJSON()
 
         with open(f"api/polygons/{next_id}.json", "w") as file:
-            json.dump(json_polygons, file)
+            json.dump(json_polygons, file, indent=4)
 
         return {"id": next_id}
 
@@ -174,7 +174,7 @@ class Poll(Resource):
 
         with open(f"api/polygons/{id}.json", "r") as file:
             polygons = json.load(file)
-            #print(json.dumps(polygons, indent=4))
+            # print(json.dumps(polygons, indent=4))
 
         # Convert json to list of Polygon objects
         polygonArray = []

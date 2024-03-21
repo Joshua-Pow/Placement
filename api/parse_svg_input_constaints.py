@@ -94,7 +94,7 @@ def translate_polygons_to_SVG(polygons, viewbox_width, viewbox_height, new_filen
 
 
 def duplicate_polygon(
-    polygons: list[Polygon], pid: int, quantity: int, len_polygons: int
+    polygons: list[Polygon], pid: int, quantity: int, amount_shapes: int
 ):
     """
     Duplicate a particular polygon shape in the polygond data structure to a certain quantity.
@@ -106,10 +106,17 @@ def duplicate_polygon(
         print("invalid pid for piece duplication!")
         return
 
-    p = polygons[pid]
+    p = next((poly for poly in polygons if poly.pid == pid), None)
+    if p is None:
+        print("invalid pid for piece duplication!")
+        return
     mirror = quantity % 2 == 0  # even quantity
 
     for i in range(quantity - 1):
+        new_pid = max(
+            amount_shapes,
+            max([p.pid for p in polygons if p.pid is not None]) + 1,
+        )
         new = Polygon(
             copy.deepcopy(p.getContour()),
             p.x,
@@ -117,9 +124,9 @@ def duplicate_polygon(
             p.width,
             p.height,
             bonding_box_margin=p.bonding_box_margin,
-            pid=len_polygons + i,
+            pid=new_pid,
         )
-
+        print("new pid", new_pid)
         if mirror and (i % 2 == 0):
             new.mirror_around_centre_x_axis()
         polygons.append(new)

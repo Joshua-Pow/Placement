@@ -120,15 +120,15 @@ class Polygon(object):
         self.y += y_move
         # bbox_list[i] = [ [x1,y1], [x2,y2] ]
         if self.bbox_list != []:
-            for i in range (len(self.bbox_list)):
-                print(f"minx = {self.bbox_list[i][0][0]} and type of min is {type(self.bbox_list[i][0])}" )
-                self.bbox_list[i][0][0] += x_move 
+            for i in range(len(self.bbox_list)):
+                # print(f"minx = {self.bbox_list[i][0][0]} and type of min is {type(self.bbox_list[i][0])}" )
+                self.bbox_list[i][0][0] += x_move
                 self.bbox_list[i][1][0] += x_move
                 self.bbox_list[i][0][1] += y_move
                 self.bbox_list[i][1][1] += y_move
             #     print(f"{self.bbox_list[i][0][0]+x_move},{self.bbox_list[i][0][1]+y_move}")
             #     tup_min = (self.bbox_list[i][0][0]+x_move, self.bbox_list[i][0][1]+y_move)
-            #     tup_max = (self.bbox_list[i][1][0]+x_move, self.bbox_list[i][1][1]+y_move)
+            #     tup_max = (self.bbox_list[i][1][0]+x_move,S self.bbox_list[i][1][1]+y_move)
             #     new_tup = (tup_min, tup_max)
             #     new_list.append(new_tup)
             # self.bbox_list = new_list
