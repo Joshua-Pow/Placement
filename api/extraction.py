@@ -64,7 +64,7 @@ def extract_from_image(
 
         ret, thresh = cv.threshold(im_dilated, 127, 255, 0)
         contours, hierarchy = cv.findContours(
-            thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE
+            thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE
         )
         #print("extracted:", len(contours), "contours")
 

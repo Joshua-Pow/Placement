@@ -37,6 +37,8 @@ class Resolution(object):
         self.output_height_cm = 118.9
         self.output_width_inch = 33.1
         self.output_height_inch = 46.8
+        self.open_cv_compression_w = 0.35
+        self.open_cv_compression_h = 0.29
 
     def __repr__(self):
         return f"pdf resolution is width = {self.pdf_width} pixels, height = {self.pdf_height} pixels\nfabric width = {self.fabric_width} {self.fabric_unit}"
@@ -49,8 +51,9 @@ class Resolution(object):
         unit: cm or inches
         """
         pixel_h = self._get_bounding_box_length(polygonArray)
-        # real_width = self._get_real_world_yardage(self, pixel_w_h[0], unit) #only need the height for yardage
-        return pixel_h * self._get_scaling_factor(unit)
+        #print(f"pixel_height is {pixel_h}, scaling factor is {self._get_scaling_factor(unit)}")
+        #print(f" *** final yardage is {pixel_h * self._get_scaling_factor(unit) / self.open_cv_compression_h}")
+        return pixel_h * self._get_scaling_factor(unit) / self.open_cv_compression_h
 
     def _get_scaling_factor(self, unit="inch"):
         """
@@ -60,6 +63,7 @@ class Resolution(object):
         scale = get_scaling_factor(unit="inch")
         actual_fabric_length = bounding_box_length * scale
         """
+        #print(f"!! pdf_height = {self.pdf_height}, output_inch = {self.output_height_inch}")
         if unit[0] == "i":  # inch
             return self.output_height_inch / self.pdf_height
 
@@ -73,7 +77,8 @@ class Resolution(object):
         current_length = 0
 
         for polygon in polygonArray:
-            current_length = max(current_length, polygon.bbox_low_y + polygon.height)
+            if polygon.y + polygon.height > current_length:
+                current_length = polygon.y + polygon.height
         return current_length
 
     def _get_bounding_box_width_limit(self):
@@ -84,5 +89,6 @@ class Resolution(object):
             a0_width = self.output_width_inch
         else:
             a0_width = self.output_height_cm
-
-        return self.pdf_width / a0_width * self.fabric_width
+        #print(f"pdf_width={self.pdf_width}, a0_width={a0_width}, fabric_wdith={self.fabric_width}")
+        #print(f"\nreturning = {self.pdf_width / a0_width * self.fabric_width * self.open_cv_compression_w}")
+        return self.pdf_width / a0_width * self.fabric_width * self.open_cv_compression_w
