@@ -15,7 +15,7 @@ def slice_nesting(polygons, container_max_x, container_max_y, iteration_number=1
         iteration_number: the current iteration to compute. A higher number
         will create more rectangles per polygon
     """
-    m = 5 # spacing buffer
+    m = 4 # spacing buffer
 
     # stage one, update boundaries per polygon
     for polygon in polygons:
@@ -33,7 +33,7 @@ def slice_nesting(polygons, container_max_x, container_max_y, iteration_number=1
             points_in_range = []
             near_x_min = polygon.x
             near_x_max = polygon.x+polygon.width
-            for point in polygon.getContour():
+            for point in polygon.getContour(): 
 
                 if max_y >= point[1] and point[1] >= min_y:
                     points_in_range.append(point)
@@ -66,6 +66,7 @@ def slice_nesting(polygons, container_max_x, container_max_y, iteration_number=1
     p2 = polygons.copy()
     placed_list = [(0, 0)]
     p3 = []  # new polygons once placed
+    passed = True
 
     while p2 != []:
         # greedy, move biggest as close as possible
@@ -76,6 +77,7 @@ def slice_nesting(polygons, container_max_x, container_max_y, iteration_number=1
         new_poly = p2[0]
         p2.pop(0)
 
+
         #sort potential placements by lowest y + x first
         placed_list.sort(key=lambda tuple: tuple[1]+0.1*tuple[0], reverse=False)
 
@@ -84,53 +86,69 @@ def slice_nesting(polygons, container_max_x, container_max_y, iteration_number=1
         for i in range(0, len(placed_list)):
             new_poly.move(placed_list[i][0], placed_list[i][1])
             passed = True
-            for p in p3:
-                if not boundary_check_pass(new_poly, p):
-                    passed = False
-                    break
+
+            if (new_poly.x + new_poly.width + m >= container_max_x):
+                passed = False
+            else:
+                for p in p3:
+                    if not boundary_check_pass(new_poly, p, container_max_x):
+                        passed = False
+                        break
 
             # remove that placement from placed_list
             if passed:
-                print(f"!!slice nesting, placed at i={i}: {placed_list[i][0]}, {placed_list[i][1]}. total placed list: {placed_list}")
-                print(f"shape min: {new_poly.x}, {new_poly.y} & max: {new_poly.x+new_poly.width}, {new_poly.y+new_poly.height}")
                 placed_list.pop(i)
                 break
-
-        # add shape bottom right
-        # add shape top right to placed list
-            # for each subslice
-        for slice_box in new_poly.bbox_list:
-            placed_list.append((slice_box[0][1]+m, slice_box[1][1]+m))
-            placed_list.append((slice_box[1][0]+m, slice_box[0][1]+m))
         
+        if not passed: # SHOULD NOT HAPPEN. means piece was wider than the fabric.
+            print(f"big uh oh. no valid placements found for shape at {new_poly}")
+            return
+        
+
+        # for each subslice
+        for slice_box in new_poly.bbox_list:
+
+            if (slice_box[1][0]+m < container_max_x):
+
+                #bottom right
+                placed_list.append((slice_box[1][0]+m, slice_box[1][1]+m))
+
+                #top right
+                placed_list.append((slice_box[1][0]+m, slice_box[0][1]+m)) 
+
+                #max x, y = 0 / top
+                placed_list.append((slice_box[1][0]+m, 0))
+        
+        # bottom left of entire shape
         placed_list.append((new_poly.x+m, new_poly.y+new_poly.height+m))
 
         # add shape to p3
         p3.append(copy.deepcopy(new_poly))
-
     assert len(polygons) == len(p3)
-    polygons = p3  # set polygon placements to new ones
+    polygons = copy.deepcopy(p3)  # set polygon placements to new ones
 
-
-def boundary_check_pass(p1, p2):
+ 
+def boundary_check_pass(p1, p2, container_max_x):
     """
     This method checks the boundary rectangles of two polygons
     and returns true IF NO collision
     """
-    m = 2  # margin 10 pixels
+    m = 2  # margin 10 pixels 
 
     # if yes intersect, actually check all sub boxes
+    if (p1.x + p1.width + m >= container_max_x or p2.x + p2.width + m >= container_max_x):
+        return False
     if (
         p1.x + m <= p2.x + p2.width 
         and p1.x + p1.width >= p2.x + m
         and p1.y + p1.height  >= p2.y +m
         and p1.y + m <= p2.y + p2.height
     ):
-        return bbox_lists_check_pass(p1.bbox_list, p2.bbox_list)
+        return bbox_lists_check_pass(p1.bbox_list, p2.bbox_list, container_max_x)
     return True
 
 
-def bbox_lists_check_pass(list1, list2):
+def bbox_lists_check_pass(list1, list2, container_max_x):
     """
     This method checks the boundaries of two polygons
     thru their bbox_lists and returns true IF NO collision
@@ -139,6 +157,7 @@ def bbox_lists_check_pass(list1, list2):
         list2: list tuple(tuple) of ((minx,miny),(maxx,maxy)) for polygon2
     """
     #print(f"list1: {list1}")
+    m = 2  # margin 10 pixels
     passed = True
     for box1 in list1:
         for box2 in list2:
@@ -152,6 +171,11 @@ def bbox_lists_check_pass(list1, list2):
                 and box1[1][0] >= box2[0][0]
                 and box1[0][1] <= box2[1][1]
                 and box1[1][1] >= box2[0][1]
+            ):
+                passed = False
+            if (
+                box1[1][0] +m > container_max_x 
+                or box2[1][0] +m > container_max_x
             ):
                 passed = False
     return passed
