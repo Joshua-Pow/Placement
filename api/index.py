@@ -208,15 +208,20 @@ class Poll(Resource):
         translate_polygons_to_SVG(
             polygonArray,
             DISPLAY_X_WIDTH,
-            int(container_max_y),
+            int(container_max_y)+15,
             f"api/svg/pattern_page_{id}.svg",
         )
-
+        if (resolution_manager.fabric_unit[0] == "i"):
+            output_unit = "yards"
+            output_value = final_yardage / 36
+        else:
+            output_unit = "metres"
+            output_value = final_yardage / 100
         response = make_response(
             send_from_directory("./svg/", f"pattern_page_{id}.svg", as_attachment=True)
         )
         response.headers["yardage"] = (
-            f"{final_yardage:.2f} {resolution_manager.fabric_unit}"
+            f"{output_value:.2f} {output_unit}"
         )
         return response
 
