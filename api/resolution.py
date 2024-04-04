@@ -63,7 +63,7 @@ class Resolution(object):
         scale = get_scaling_factor(unit="inch")
         actual_fabric_length = bounding_box_length * scale
         """
-        print(f"!! pdf_height = {self.pdf_height}, output_inch = {self.output_height_inch}")
+        #print(f"!! pdf_height = {self.pdf_height}, output_inch = {self.output_height_inch}")
         if unit[0] == "i":  # inch
             return self.output_height_inch / self.pdf_height
 
