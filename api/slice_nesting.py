@@ -3,7 +3,7 @@
 import copy
 
 
-def slice_nesting(polygons, container_max_x, container_max_y, iteration_number=1):
+def slice_nesting(polygons, container_max_x, iteration_number=1):
     """
     Packing algorithm which divides shapes along the y-axis into smaller
     rectangles for closer packing. The bounding box is therefore a collection
