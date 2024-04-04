@@ -33,6 +33,7 @@ resolution_manager = Resolution(
     pdf_width=0, pdf_height=0, fabric_width=0, fabric_unit="cm"
 )
 
+DISPLAY_X_WIDTH = 800
 
 @api.route("/pdf")
 class Pdf(Resource):
@@ -193,31 +194,36 @@ class Poll(Resource):
             )
 
         container_max_x = resolution_manager._get_bounding_box_width_limit()
-        container_max_y = container_max_x * 10
         # rectangle_packing(polygonArray, int(container_max_x), int(container_max_y))
         slice_nesting(
             polygonArray,
             int(container_max_x),
-            int(container_max_y),
             int(iterationNumber),
         )
 
         final_yardage = resolution_manager.get_final_yardage(
             polygonArray, resolution_manager.fabric_unit
         )
-
+        container_max_y = resolution_manager._get_bounding_box_length(polygonArray)
         translate_polygons_to_SVG(
             polygonArray,
-            2000,
-            2000,
+            DISPLAY_X_WIDTH,
+            int(container_max_y)+15,
             f"api/svg/pattern_page_{id}.svg",
         )
-
+        if (resolution_manager.fabric_unit[0] == "i"):
+            output_unit = "yards"
+            output_value = final_yardage / 36
+        else:
+            output_unit = "metres"
+            output_value = final_yardage / 100
         response = make_response(
             send_from_directory("./svg/", f"pattern_page_{id}.svg", as_attachment=True)
         )
-        response.headers["yardage"] = ( 
-            f"{final_yardage:.2f} {resolution_manager.fabric_unit}"
+
+        response.headers["yardage"] = (
+            f"{output_value:.2f} {output_unit}"
+
         )
         return response
 
