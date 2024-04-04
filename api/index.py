@@ -216,7 +216,7 @@ class Poll(Resource):
         response = make_response(
             send_from_directory("./svg/", f"pattern_page_{id}.svg", as_attachment=True)
         )
-        response.headers["yardage"] = (
+        response.headers["yardage"] = ( 
             f"{final_yardage:.2f} {resolution_manager.fabric_unit}"
         )
         return response
