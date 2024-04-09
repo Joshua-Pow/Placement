@@ -139,7 +139,7 @@ def boundary_check_pass(p1, p2, container_max_x):
     if (p1.x + p1.width + m >= container_max_x or p2.x + p2.width + m >= container_max_x):
         return False
     if (
-        p1.x + m <= p2.x + p2.width 
+        p1.x + m <= p2.x + p2.width
         and p1.x + p1.width >= p2.x + m
         and p1.y + p1.height  >= p2.y +m
         and p1.y + m <= p2.y + p2.height

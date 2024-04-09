@@ -14,6 +14,7 @@ class Resolution(object):
         pdf_height: int,
         fabric_width: int,
         fabric_unit: Literal["cm", "inch"],
+        num_pages: int,
     ):
         """
         pdf_width: number of pixels horizontally
@@ -29,6 +30,7 @@ class Resolution(object):
 
         self.fabric_width = fabric_width  # Real world dimensions
         self.fabric_unit = fabric_unit
+        self.num_pages = num_pages
 
         """
         The A0 paper size is 84.1 cm x 118.9 cm or 33.1 inches x 46.8 inches
@@ -65,9 +67,9 @@ class Resolution(object):
         """
         #print(f"!! pdf_height = {self.pdf_height}, output_inch = {self.output_height_inch}")
         if unit[0] == "i":  # inch
-            return self.output_height_inch / self.pdf_height
+            return self.output_height_inch / self.pdf_height * self.num_pages
 
-        return self.output_height_cm / self.pdf_height
+        return self.output_height_cm / self.pdf_height * self.num_pages
 
     def _get_bounding_box_length(self, polygonArray: list[Polygon]):
         """
@@ -85,10 +87,11 @@ class Resolution(object):
         """
         returns a pixel value representing the fabric width scaled to the input pdf dimensions
         """
+        print(f"num pages = {self.num_pages}")
         if self.fabric_unit[0] == "i":
             a0_width = self.output_width_inch
         else:
             a0_width = self.output_height_cm
         #print(f"pdf_width={self.pdf_width}, a0_width={a0_width}, fabric_wdith={self.fabric_width}")
         #print(f"\nreturning = {self.pdf_width / a0_width * self.fabric_width * self.open_cv_compression_w}")
-        return self.pdf_width / a0_width * self.fabric_width * self.open_cv_compression_w
+        return self.pdf_width / a0_width * self.fabric_width * self.open_cv_compression_w / self.num_pages

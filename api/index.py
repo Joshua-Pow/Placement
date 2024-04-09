@@ -30,7 +30,7 @@ api = Api(
 )
 
 resolution_manager = Resolution(
-    pdf_width=0, pdf_height=0, fabric_width=0, fabric_unit="cm"
+    pdf_width=0, pdf_height=0, fabric_width=0, fabric_unit="cm", num_pages=1
 )
 
 DISPLAY_X_WIDTH = 800
@@ -65,9 +65,9 @@ class Pdf(Resource):
 
         # Process the uploaded file
         file = request.files["file"]
-        print(
-            f"Fabric Length: {resolution_manager.fabric_width} {resolution_manager.fabric_unit}"
-        )
+        # print(
+        #     f"Fabric Length: {resolution_manager.fabric_width} {resolution_manager.fabric_unit}"
+        # )
         if file and file.filename:
             # Secure the filename and save the file
             secureName = secure_filename(file.filename)
@@ -103,13 +103,14 @@ class Pdf(Resource):
         """
 
         svgs = request.get_json()["svg"]
+        print(f"svgs is {len(svgs)}") 
 
         # Generate an unique id and store the polygons in a /polygons/<id>.json file
         # Check if theres an id of 1, if not, create it
         # If there is an id of 1, increment the id by 1 and create the new id
         # Store the polygons in the file
         # Return the id to the user
-        os.makedirs("api/polygons", exist_ok=True)
+        os.makedirs("api/polygons", exist_ok=True) 
         next_id = 1
         while os.path.exists(f"api/polygons/{next_id}.json"):
             next_id += 1
@@ -120,12 +121,11 @@ class Pdf(Resource):
         # Go through each svg and parse it into a Polygon object then add it to the polygons list
         for svg in svgs:
             polygons.extend(parse_svg(svg["svgString"]))
-
             if svg["placeOnFold"]:
                 print("Place on fold")
                 print(svg["foldLocation"])
                 polygons[-1].centre_fold_manip(svg["foldLocation"])
-
+ 
             if svg["quantity"] > 1:
                 print(f"Duplicate {svg['quantity']} times")
                 duplicate_polygon(polygons, svg["id"], svg["quantity"], len(svgs))
@@ -137,9 +137,10 @@ class Pdf(Resource):
 
         with open(f"api/polygons/{next_id}.json", "w") as file:
             json.dump(json_polygons, file, indent=4)
+            #print(json.dumps(json_polygons, indent=4))
 
-        return {"id": next_id}
-
+        return {"id": next_id} 
+ 
 
 @api.route("/poll")
 class Poll(Resource):
@@ -175,7 +176,7 @@ class Poll(Resource):
 
         with open(f"api/polygons/{id}.json", "r") as file:
             polygons = json.load(file)
-            # print(json.dumps(polygons, indent=4))
+            #print(json.dumps(polygons, indent=4))
 
         # Convert json to list of Polygon objects
         polygonArray = []

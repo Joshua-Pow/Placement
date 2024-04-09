@@ -87,11 +87,16 @@ def extract_from_image(
         pages_height.append(height)
         total_height += height
 
+        resolution_manager.num_pages = i+1
+
+        if (i == 0):
+            resolution_manager.pdf_height = total_height
+
         # store resolution
 
     # store image resolution for yardage calculations
     resolution_manager.pdf_width = width
-    resolution_manager.pdf_height = total_height
+    #resolution_manager.pdf_height = total_height
 
     # save to a svg file
     output_svg_path = "./api/simple_shapes.svg"
@@ -99,10 +104,9 @@ def extract_from_image(
         f.write(
             f'<svg viewBox="0 0 {width} {total_height}" xmlns="http://www.w3.org/2000/svg">'
         )
-
+        id_counter = 0
         for i in range(len(all_contours)):
             contours = all_contours[i]
-            id_counter = 0
             for c in contours:
                 f.write(
                     f'<path id="shape-{id_counter}" d="M'
