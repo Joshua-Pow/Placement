@@ -22,6 +22,7 @@ def parse_svg(svgString: str) -> list[Polygon]:
     polygons: list[Polygon] = []
     space_margin = 2
     # print the line draw commands
+    #print(f"Path data len = {path_data}")
     for path_string, id in path_data:
         # using parse_path here since in the future we might have curve lines
         # and this python library would be useful
@@ -68,7 +69,6 @@ def parse_svg(svgString: str) -> list[Polygon]:
             pid=int(id),
         )
         polygons.append(p)
-
     return polygons
 
 
@@ -142,7 +142,7 @@ def duplicate_polygon(
 # polygons[2].centre_fold_manip("bottom")
 
 # container_max_x = 10000
-# container_max_y = 4000
+# container_max_y = 4000 
 # rectangle_packing(polygons, container_max_x, container_max_y)
 
 # translate_polygons_to_SVG(polygons, 2000, 6000, "./api/new_placement_dup.svg")
